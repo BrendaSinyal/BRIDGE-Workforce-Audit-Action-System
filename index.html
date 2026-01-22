@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Open Results</title>
+</head>
+<body style="font-family:Arial;max-width:520px;margin:40px auto;padding:0 16px;">
+  <h2>View your audit results</h2>
+  <p>Please enter the same email you used in the survey.</p>
+
+  <input id="email" type="email" placeholder="you@company.com"
+         style="width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;font-size:16px;" />
+
+  <button onclick="findResult()"
+          style="margin-top:12px;width:100%;padding:12px;border:0;border-radius:10px;font-size:16px;cursor:pointer;">
+    Open my results
+  </button>
+
+  <p id="msg" style="margin-top:12px;color:#b00020;"></p>
+
+<script>
+const WEBAPP_URL = "PASTE_YOUR_WEB_APP_URL_HERE"; // <-- ganti
+
+function findResult() {
+  const email = document.getElementById("email").value.trim();
+  const msg = document.getElementById("msg");
+  msg.textContent = "";
+
+  if (!email) {
+    msg.textContent = "Please enter your email.";
+    return;
+  }
+
+  // JSONP callback (avoid CORS)
+  const cb = "cb_" + Date.now();
+  window[cb] = function(res) {
+    try { delete window[cb]; } catch(e) {}
+    if (!res || !res.ok) {
+      msg.textContent = (res && res.error) ? res.error : "Unable to find results.";
+      return;
+    }
+    window.location.href = res.resultUrl; // -> result.html?t=...
+  };
+
+  const s = document.createElement("script");
+  s.src = WEBAPP_URL + "?mode=byEmail&email=" + encodeURIComponent(email) + "&callback=" + cb;
+  s.onerror = () => msg.textContent = "Network error. Please try again.";
+  document.body.appendChild(s);
+}
+</script>
+</body>
+</html>
