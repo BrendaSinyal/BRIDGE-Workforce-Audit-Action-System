@@ -270,7 +270,7 @@ ctx.font = `800 ${pctFont}px Arial`;
 ctx.fillText(`${Math.round(score)}%`, cx, H * 0.50);
 
 // label pill (lebih kecil)
-const lbl = (label || scoreToLabel(score)).trim();
+const lbl = String(label ?? scoreToLabel(score)).trim();
 
 // ukuran pill responsif + lebih kecil dari sebelumnya
 const pillW = Math.min(280, W * 0.62);  // <-- sebelumnya bisa 320 / W*0.7
@@ -298,27 +298,6 @@ const lblFont = Math.max(16, Math.min(20, W * 0.035)); // <-- sebelumnya 22
 ctx.fillStyle = pillText;
 ctx.font = `800 ${lblFont}px Arial`;
 ctx.fillText(`${lbl} Readiness`, cx, pillY + (pillH * 0.68));
-
-    // pill background like your reference (light tint)
-    const pillBg =
-      lbl === "High" ? "#e8f7ef" :
-      lbl === "Moderate" ? "#fff4d8" :
-      lbl === "Low" ? "#ffe9d6" :
-      "#ffe1e1";
-
-    const pillText =
-      lbl === "High" ? "#1a7a4a" :
-      lbl === "Moderate" ? "#9a6a00" :
-      lbl === "Low" ? "#a85a00" :
-      "#a10f0f";
-
-    ctx.fillStyle = pillBg;
-    roundedRect(ctx, pillX, pillY, pillW, pillH, 24);
-    ctx.fill();
-
-    ctx.fillStyle = pillText;
-    ctx.font = "800 22px Arial";
-    ctx.fillText(`${lbl} Readiness`, cx, pillY + 32);
   }
 
   /***********************
@@ -362,27 +341,37 @@ ctx.fillText(`${lbl} Readiness`, cx, pillY + (pillH * 0.68));
         }
 
         // ✅ match Apps Script response: totalScore + readiness + section.*
-        const score = clamp(Number(resp.totalScore), 0, 100);
-        const label = (resp.readiness || scoreToLabel(score)).trim();
+        const rawScore = resp.totalScore ?? resp.total ?? resp.score ?? resp.total_readiness;
+const scoreNum = Number(rawScore);
 
-        currentScore = score;
-        currentLabel = label;
+if (Number.isNaN(scoreNum)) {
+  errEl.textContent = "Invalid score from API (cek field totalScore/total).";
+  return;
+}
+
+const score = clamp(scoreNum, 0, 100);
+
+const labelRaw = resp.readiness ?? resp.label;
+const label = String(labelRaw ?? scoreToLabel(score)).trim();
+
+currentScore = score;
+currentLabel = label;
 
         // overall text
-        document.getElementById("overallScore").textContent = `${Math.round(score)}%`;
-        document.getElementById("overallLabel").textContent = `${label} Readiness`;
+       document.getElementById("overallScore").textContent = `${Math.round(score)}%`;
+document.getElementById("overallLabel").textContent = `${label} Readiness`;
 
         // draw gauge
         drawGauge(score, label);
 
         // section bars
-        const sec = resp.section || {};
-        setBar("barBuild","valBuild", sec.build);
-        setBar("barRec","valRec", sec.recognise);
-        setBar("barIns","valIns", sec.inspire);
-        setBar("barDev","valDev", sec.develop);
-        setBar("barGui","valGui", sec.guide);
-        setBar("barEmp","valEmp", sec.empower);
+        const sec = resp.section ?? resp.sections ?? {};
+setBar("barBuild","valBuild", sec.build);
+setBar("barRec","valRec", sec.recognise ?? sec.recognize);
+setBar("barIns","valIns", sec.inspire);
+setBar("barDev","valDev", sec.develop);
+setBar("barGui","valGui", sec.guide);
+setBar("barEmp","valEmp", sec.empower);
 
       } finally {
         try { delete window[cbName]; } catch(e){}
