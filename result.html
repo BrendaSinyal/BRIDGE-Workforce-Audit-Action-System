@@ -3,73 +3,241 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Audit Results</title>
-</head>
-<body style="font-family:Arial;max-width:720px;margin:40px auto;padding:0 16px;">
-  <h2>Your results</h2>
-  <p id="err" style="color:#b00020;"></p>
+  <title>B/RIDGE Results</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#fff; color:#123; }
+    .wrap { max-width: 980px; margin: 28px auto; padding: 0 18px; }
+    .card { border: 1px solid #e7eef6; border-radius: 14px; padding: 18px 18px 22px; }
+    h1 { font-size: 28px; margin: 0 0 10px; color:#0a4aa6; }
+    .topline { height: 2px; background:#c8dcf6; margin: 6px 0 18px; }
 
-  <div style="border:1px solid #eee;border-radius:14px;padding:16px;">
-    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
-      <div>
-        <div style="font-size:40px;font-weight:800;" id="total">—</div>
-        <div style="font-weight:700;" id="readiness">—</div>
-      </div>
-      <div style="flex:1;min-width:240px;">
-        <div><b>Build</b>: <span id="b"></span></div>
-        <div><b>Recognise</b>: <span id="r"></span></div>
-        <div><b>Inspire</b>: <span id="i"></span></div>
-        <div><b>Develop</b>: <span id="d"></span></div>
-        <div><b>Guide</b>: <span id="g"></span></div>
-        <div><b>Empower</b>: <span id="e"></span></div>
+    .row { display:flex; gap:26px; flex-wrap:wrap; align-items:flex-start; }
+    .left { flex: 1 1 420px; }
+    .right { flex: 0 0 320px; }
+
+    /* Gauge */
+    .gaugeWrap { display:flex; align-items:center; gap:18px; }
+    .gauge {
+      width: 240px; height: 240px; border-radius: 50%;
+      background: conic-gradient(
+        #1fb36a 0deg 72deg,     /* High 20% */
+        #f1c232 72deg 180deg,   /* Moderate 40% */
+        #f39c12 180deg 252deg,  /* Low 20% */
+        #d64541 252deg 360deg   /* Critical 20% */
+      );
+      position: relative;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+    }
+    .gauge::after{
+      content:"";
+      position:absolute; inset:20px;
+      background:#fff; border-radius:50%;
+      box-shadow: inset 0 0 0 1px #eef3fb;
+    }
+    .gaugeCenter {
+      position:absolute; inset:0;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      z-index:2;
+    }
+    .pct { font-size: 52px; font-weight: 800; color:#0a2a5a; line-height:1; }
+    .label { font-weight: 800; font-size: 16px; padding: 6px 12px; border-radius: 999px; margin-top: 10px; }
+    .label.high { background:#e8f7ef; color:#1a7a4a; }
+    .label.moderate { background:#fff4d8; color:#9a6a00; }
+    .label.low { background:#ffe9d6; color:#a85a00; }
+    .label.critical { background:#ffe1e1; color:#a10f0f; }
+
+    /* needle */
+    .needle {
+      position:absolute; left:50%; top:50%;
+      width: 6px; height: 96px;
+      background:#3b3b3b;
+      transform-origin: bottom center;
+      transform: translateX(-50%) translateY(-100%) rotate(0deg);
+      border-radius: 6px;
+      z-index:3;
+      box-shadow: 0 2px 6px rgba(0,0,0,.18);
+    }
+    .hub {
+      position:absolute; left:50%; top:50%;
+      width: 18px; height: 18px; border-radius: 50%;
+      background:#3b3b3b;
+      transform: translate(-50%,-50%);
+      z-index:4;
+    }
+
+    /* legend */
+    .legend { margin-top: 6px; font-size: 14px; }
+    .legItem { display:flex; align-items:center; gap:10px; margin: 8px 0; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot.high { background:#1fb36a; }
+    .dot.mod { background:#f1c232; }
+    .dot.low { background:#f39c12; }
+    .dot.crit { background:#d64541; }
+    .legText b { font-weight: 800; }
+
+    /* Section bars */
+    h3 { margin: 18px 0 10px; color:#0a2a5a; }
+    .section { display:flex; align-items:center; gap:16px; padding: 10px 0; border-top: 1px solid #edf2fb; }
+    .section:first-of-type { border-top: 0; }
+    .secName { width: 310px; font-weight: 700; color:#0a2a5a; font-size: 14px; }
+    .barWrap { flex: 1; height: 16px; background:#f0f5ff; border-radius: 999px; overflow:hidden; }
+    .bar { height: 100%; width: 0%; background:#f1c232; border-radius: 999px; }
+    .secVal { width: 52px; text-align:right; font-weight: 800; color:#0a2a5a; }
+
+    .overall { margin-top: 16px; text-align:center; font-weight: 800; color:#0a2a5a; }
+    .overall span { font-size: 40px; }
+    .err { color:#b00020; margin: 8px 0 0; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>B/RIDGE™ Workforce Readiness Assessment</h1>
+      <div class="topline"></div>
+
+      <div class="row">
+        <div class="left">
+          <div class="gaugeWrap">
+            <div class="gauge" id="gauge">
+              <div class="needle" id="needle"></div>
+              <div class="hub"></div>
+              <div class="gaugeCenter">
+                <div class="pct" id="pct">—%</div>
+                <div class="label moderate" id="readinessPill">—</div>
+              </div>
+            </div>
+
+            <div class="legend">
+              <div class="legItem"><div class="dot high"></div><div class="legText"><b>High</b> Readiness 80–100%</div></div>
+              <div class="legItem"><div class="dot mod"></div><div class="legText"><b>Moderate</b> Readiness 60–79%</div></div>
+              <div class="legItem"><div class="dot low"></div><div class="legText"><b>Low</b> Readiness 40–59%</div></div>
+              <div class="legItem"><div class="dot crit"></div><div class="legText"><b>Critical</b> Readiness 0–39%</div></div>
+            </div>
+          </div>
+
+          <h3>Section Scores:</h3>
+
+          <div class="section">
+            <div class="secName">Build – Foundations &amp; Structures</div>
+            <div class="barWrap"><div class="bar" id="barBuild"></div></div>
+            <div class="secVal" id="valBuild">—%</div>
+          </div>
+          <div class="section">
+            <div class="secName">Recognise – Acknowledge &amp; Value</div>
+            <div class="barWrap"><div class="bar" id="barRec"></div></div>
+            <div class="secVal" id="valRec">—%</div>
+          </div>
+          <div class="section">
+            <div class="secName">Inspire – Motivation &amp; Engagement</div>
+            <div class="barWrap"><div class="bar" id="barIns"></div></div>
+            <div class="secVal" id="valIns">—%</div>
+          </div>
+          <div class="section">
+            <div class="secName">Develop – Skills &amp; Growth</div>
+            <div class="barWrap"><div class="bar" id="barDev"></div></div>
+            <div class="secVal" id="valDev">—%</div>
+          </div>
+          <div class="section">
+            <div class="secName">Guide – Direction &amp; Support</div>
+            <div class="barWrap"><div class="bar" id="barGui"></div></div>
+            <div class="secVal" id="valGui">—%</div>
+          </div>
+          <div class="section">
+            <div class="secName">Empower – Ownership &amp; Sustainability</div>
+            <div class="barWrap"><div class="bar" id="barEmp"></div></div>
+            <div class="secVal" id="valEmp">—%</div>
+          </div>
+
+          <div class="overall">
+            Overall Readiness Score: <span id="overall">—%</span> <span style="font-size:20px;" id="overallLabel"></span>
+          </div>
+
+          <div class="err" id="err"></div>
+        </div>
       </div>
     </div>
   </div>
 
 <script>
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxawEyd4imKhL--Y995FMk8KYZGH1oo7G6ylqr0XRJWrpQlpSN3-aOBjQv-Cy1HCkdk/exec";
+  // 🔧 paste your Apps Script Web App URL here
+  const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxawEyd4imKhL--Y995FMk8KYZGH1oo7G6ylqr0XRJWrpQlpSN3-aOBjQv-Cy1HCkdk/exec";
 
-const params = new URLSearchParams(location.search);
-const token = params.get("t");
-const errEl = document.getElementById("err");
+  const params = new URLSearchParams(location.search);
+  const token = params.get("t");
 
-function setText(id, v) {
-  document.getElementById(id).textContent = (v === "" || v === null || v === undefined) ? "—" : v;
-}
-
-function loadResult() {
-  if (!token) {
-    errEl.textContent = "Missing token. Please go back and enter your email again.";
-    return;
+  function jsonp(url, cbName, onDone) {
+    window[cbName] = function(res){
+      try { delete window[cbName]; } catch(e){}
+      onDone(res);
+    };
+    const s = document.createElement("script");
+    s.src = url + (url.includes("?") ? "&" : "?") + "callback=" + cbName;
+    s.onerror = () => onDone({ok:false, error:"Network error"});
+    document.body.appendChild(s);
   }
 
-  const cb = "cb_" + Date.now();
-  window[cb] = function(res) {
-    try { delete window[cb]; } catch(e) {}
-    if (!res || !res.ok) {
-      errEl.textContent = (res && res.error) ? res.error : "Result not found.";
-      return;
-    }
+  function roundPct(x){
+    const n = Number(x);
+    if (isNaN(n)) return null;
+    return Math.round(n);
+  }
 
-    // display
-    setText("total", res.totalScore + "%");
-    setText("readiness", res.readiness + " Readiness");
+  function setBar(barId, valId, value){
+    const pct = roundPct(value);
+    document.getElementById(valId).textContent = (pct===null ? "—%" : pct + "%");
+    document.getElementById(barId).style.width = (pct===null ? "0%" : pct + "%");
+  }
 
-    setText("b", res.section && res.section.build);
-    setText("r", res.section && res.section.recognise);
-    setText("i", res.section && res.section.inspire);
-    setText("d", res.section && res.section.develop);
-    setText("g", res.section && res.section.guide);
-    setText("e", res.section && res.section.empower);
-  };
+  function setReadinessPill(readiness){
+    const pill = document.getElementById("readinessPill");
+    const r = String(readiness || "").toLowerCase();
+    pill.className = "label " + (r==="high" ? "high" : r==="moderate" ? "moderate" : r==="low" ? "low" : "critical");
+    pill.textContent = (readiness ? (readiness + " Readiness") : "—");
+  }
 
-  const s = document.createElement("script");
-  s.src = WEBAPP_URL + "?mode=byToken&t=" + encodeURIComponent(token) + "&callback=" + cb;
-  s.onerror = () => errEl.textContent = "Network error. Please refresh.";
-  document.body.appendChild(s);
-}
+  // Map score 0–100 to needle angle:
+  // We'll use 0% = 252deg (Critical start), 100% = 72deg (High end) around the circle
+  function setNeedle(score){
+    const s = Math.max(0, Math.min(100, Number(score)));
+    // linear map: 0 -> 252deg, 100 -> 72deg (wrap)
+    // We'll map through 360 by going forward: 252 to 432 (same as 72)
+    const angle = 252 + (s/100)*180; // 252 -> 432
+    document.getElementById("needle").style.transform =
+      "translateX(-50%) translateY(-100%) rotate(" + angle + "deg)";
+  }
 
-loadResult();
+  function load(){
+    const errEl = document.getElementById("err");
+    if (!token) { errEl.textContent = "Missing token."; return; }
+
+    const cb = "cb_" + Date.now();
+    const url = WEBAPP_URL + "?mode=byToken&t=" + encodeURIComponent(token);
+    jsonp(url, cb, function(res){
+      if (!res || !res.ok){
+        errEl.textContent = (res && res.error) ? res.error : "Result not found.";
+        return;
+      }
+
+      const total = roundPct(res.totalScore);
+      document.getElementById("pct").textContent = (total===null ? "—%" : total + "%");
+      document.getElementById("overall").textContent = (total===null ? "—%" : total + "%");
+      document.getElementById("overallLabel").textContent = res.readiness ? (res.readiness + " Readiness") : "";
+
+      setReadinessPill(res.readiness);
+      setNeedle(total || 0);
+
+      const sec = res.section || {};
+      setBar("barBuild","valBuild",sec.build);
+      setBar("barRec","valRec",sec.recognise);
+      setBar("barIns","valIns",sec.inspire);
+      setBar("barDev","valDev",sec.develop);
+      setBar("barGui","valGui",sec.guide);
+      setBar("barEmp","valEmp",sec.empower);
+    });
+  }
+
+  load();
 </script>
 </body>
 </html>
