@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Audit Results</title>
+</head>
+<body style="font-family:Arial;max-width:720px;margin:40px auto;padding:0 16px;">
+  <h2>Your results</h2>
+  <p id="err" style="color:#b00020;"></p>
+
+  <div style="border:1px solid #eee;border-radius:14px;padding:16px;">
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+      <div>
+        <div style="font-size:40px;font-weight:800;" id="total">—</div>
+        <div style="font-weight:700;" id="readiness">—</div>
+      </div>
+      <div style="flex:1;min-width:240px;">
+        <div><b>Build</b>: <span id="b"></span></div>
+        <div><b>Recognise</b>: <span id="r"></span></div>
+        <div><b>Inspire</b>: <span id="i"></span></div>
+        <div><b>Develop</b>: <span id="d"></span></div>
+        <div><b>Guide</b>: <span id="g"></span></div>
+        <div><b>Empower</b>: <span id="e"></span></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxawEyd4imKhL--Y995FMk8KYZGH1oo7G6ylqr0XRJWrpQlpSN3-aOBjQv-Cy1HCkdk/exec";
+
+const params = new URLSearchParams(location.search);
+const token = params.get("t");
+const errEl = document.getElementById("err");
+
+function setText(id, v) {
+  document.getElementById(id).textContent = (v === "" || v === null || v === undefined) ? "—" : v;
+}
+
+function loadResult() {
+  if (!token) {
+    errEl.textContent = "Missing token. Please go back and enter your email again.";
+    return;
+  }
+
+  const cb = "cb_" + Date.now();
+  window[cb] = function(res) {
+    try { delete window[cb]; } catch(e) {}
+    if (!res || !res.ok) {
+      errEl.textContent = (res && res.error) ? res.error : "Result not found.";
+      return;
+    }
+
+    // display
+    setText("total", res.totalScore + "%");
+    setText("readiness", res.readiness + " Readiness");
+
+    setText("b", res.section && res.section.build);
+    setText("r", res.section && res.section.recognise);
+    setText("i", res.section && res.section.inspire);
+    setText("d", res.section && res.section.develop);
+    setText("g", res.section && res.section.guide);
+    setText("e", res.section && res.section.empower);
+  };
+
+  const s = document.createElement("script");
+  s.src = WEBAPP_URL + "?mode=byToken&t=" + encodeURIComponent(token) + "&callback=" + cb;
+  s.onerror = () => errEl.textContent = "Network error. Please refresh.";
+  document.body.appendChild(s);
+}
+
+loadResult();
+</script>
+</body>
+</html>
