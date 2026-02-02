@@ -299,19 +299,20 @@ function roundedRect(ctx, x, y, w, h, r) {
       "#ffe1e1";
 
     const pillText = 
-      lbl === "High" ? "#1a7a4a" :
-      lbl === "Moderate" ? "#9a6a00" :
-      lbl === "Low" ? "#a85a00" :
-      "#a10f0f";
+      lbl === "High" ? "#ffffff" :
+      lbl === "Moderate" ? "#ffffff" :
+      lbl === "Low" ? "#ffffff" :
+      "#ffffff";
 
-    ctx.fillStyle = "#f1c40f"; 
+    ctx.fillStyle = "pillBg"; 
     roundedRect(ctx, pillX, pillY, pillW, pillH, 20); 
     ctx.fill();
 
-    const lblFont = Math.max(13, Math.min(17, W * 0.03)); 
-    ctx.fillStyle = "#2ecc71"; 
-    ctx.font = `800 ${lblFont}px Arial`;
-    ctx.fillText(`${lbl} Readiness`, cx, pillY + (pillH * 0.68));
+    // Place the label text inside the colored background
+const lblFont = Math.max(13, Math.min(17, W * 0.03)); // Adjusted font size for better visibility
+ctx.fillStyle = pillText;
+ctx.font = `800 ${lblFont}px Arial`;
+ctx.fillText(`${lbl} Readiness`, cx, pillY + (pillH * 0.68));
   }
 
   function classByScore(score){
