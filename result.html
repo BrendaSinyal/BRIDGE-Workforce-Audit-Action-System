@@ -157,7 +157,7 @@
     //return (2 - (s/100)) * Math.PI;
     
     // 0..100 -> PI..0  (0% kiri, 100% kanan)
-    return Math.PI - (s/100) * Math.PI;
+    return Math.PI + (s/100) * Math.PI;
   }
   function getParam(name){
     const u = new URL(window.location.href);
@@ -231,25 +231,22 @@
 
     segments.forEach(seg => {
   
-   let a1 = scoreToAngle(seg.from);
-  let a2 = scoreToAngle(seg.to);
-
-  // biar nggak wrap
-  if (a1 < a2) [a1, a2] = [a2, a1];
+    const a1 = scoreToAngle(seg.from);
+  const a2 = scoreToAngle(seg.to);
 
   ctx.strokeStyle = seg.color;
   ctx.beginPath();
-  ctx.arc(cx, cy, rMid, a1, a2, false); // ✅ top-half
+  ctx.arc(cx, cy, rMid, a1, a2, false);
   ctx.stroke();
     });
 
     // inner face (white)
     ctx.fillStyle = "#fff";
     ctx.beginPath();
-    ctx.arc(cx, cy, rInner, Math.PI, 0, false);
-    ctx.lineTo(cx, cy);
-    ctx.closePath();
-    ctx.fill();
+ctx.arc(cx, cy, rInner, Math.PI, Math.PI * 2, false);
+ctx.lineTo(cx, cy);
+ctx.closePath();
+ctx.fill();
 
     // --- ring labels: "High" (kiri) & "Critical" (kanan) ---
 ctx.save();
@@ -276,7 +273,7 @@ ctx.restore();
    ctx.strokeStyle = "#cfd4da";
 ctx.lineWidth = 2;
 ctx.beginPath();
-ctx.arc(cx, cy, rOuter + 1, Math.PI, 0, false);
+ctx.arc(cx, cy, rOuter + 1, Math.PI, Math.PI * 2, false);
 ctx.stroke();
 
     // needle
