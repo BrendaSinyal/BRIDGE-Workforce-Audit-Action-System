@@ -230,9 +230,15 @@
   ];
 
     segments.forEach(seg => {
+  let a1 = scoreToAngle(seg.from);
+  let a2 = scoreToAngle(seg.to);
+
+  // ✅ guard biar ga wrap (yang bikin hijau jadi mendominasi)
+  if (a1 < a2) [a1, a2] = [a2, a1];
+
   ctx.strokeStyle = seg.color;
   ctx.beginPath();
-  ctx.arc(cx, cy, rMid, scoreToAngle(seg.from), scoreToAngle(seg.to), true);
+  ctx.arc(cx, cy, rMid, a1, a2, true); // top-half
   ctx.stroke();
     });
 
