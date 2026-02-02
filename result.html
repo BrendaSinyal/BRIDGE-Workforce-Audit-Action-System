@@ -157,7 +157,10 @@
     //return (2 - (s/100)) * Math.PI;
     
     // 0..100 -> PI..0  (0% kiri, 100% kanan)
-    return Math.PI + (s/100) * Math.PI;
+    //return Math.PI + (s/100) * Math.PI;
+
+    // Map 0..100 to 0..π (Full Half Circle)
+    return Math.PI - (s / 100) * Math.PI; // for left to right
   }
   function getParam(name){
     const u = new URL(window.location.href);
@@ -234,6 +237,9 @@
     const a1 = scoreToAngle(seg.from);
   const a2 = scoreToAngle(seg.to);
 
+      // Check for correct angle direction
+  if (a1 > a2) [a1, a2] = [a2, a1];
+      
   ctx.strokeStyle = seg.color;
   ctx.beginPath();
   ctx.arc(cx, cy, rMid, a1, a2, false);
