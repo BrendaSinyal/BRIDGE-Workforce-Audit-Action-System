@@ -218,7 +218,7 @@
     ctx.lineWidth = thickness;
     ctx.strokeStyle = "#e9ecef";
     ctx.beginPath();
-    ctx.arc(cx, cy, rMid, Math.PI, 0, true);
+    ctx.arc(cx, cy, rMid, Math.PI, 0, false);
     ctx.stroke();
 
     // segments (Critical → Low → Moderate → High)
@@ -231,16 +231,22 @@
 
     segments.forEach(seg => {
   
+   let a1 = scoreToAngle(seg.from);
+  let a2 = scoreToAngle(seg.to);
+
+  // biar nggak wrap
+  if (a1 < a2) [a1, a2] = [a2, a1];
+
   ctx.strokeStyle = seg.color;
   ctx.beginPath();
-  ctx.arc(cx, cy, rMid, scoreToAngle(seg.from), scoreToAngle(seg.to), true); // top-half
+  ctx.arc(cx, cy, rMid, a1, a2, false); // ✅ top-half
   ctx.stroke();
     });
 
     // inner face (white)
     ctx.fillStyle = "#fff";
     ctx.beginPath();
-    ctx.arc(cx, cy, rInner, Math.PI, 0, true);
+    ctx.arc(cx, cy, rInner, Math.PI, 0, false);
     ctx.lineTo(cx, cy);
     ctx.closePath();
     ctx.fill();
@@ -270,7 +276,7 @@ ctx.restore();
    ctx.strokeStyle = "#cfd4da";
 ctx.lineWidth = 2;
 ctx.beginPath();
-ctx.arc(cx, cy, rOuter + 1, Math.PI, 0, true);
+ctx.arc(cx, cy, rOuter + 1, Math.PI, 0, false);
 ctx.stroke();
 
     // needle
