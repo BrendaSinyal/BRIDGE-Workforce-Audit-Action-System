@@ -154,7 +154,7 @@
     const s = clamp(score,0,100);
     
     // map 0..100 to 2π..π (half gauge)
-    // return (2 - (s/100)) * Math.PI;
+    //return (2 - (s/100)) * Math.PI;
     
     // 0..100 -> PI..0  (0% kiri, 100% kanan)
     return Math.PI - (s/100) * Math.PI;
@@ -222,20 +222,20 @@
     ctx.stroke();
 
     // segments (Critical → Low → Moderate → High)
-    const segments = [
-      { from: 0,  to: 39,  color: "#e74c3c" },
-      { from: 40, to: 59,  color: "#f39c12" },
-      { from: 60, to: 79,  color: "#f1c40f" },
-      { from: 80, to: 100, color: "#2ecc71" },
-    ];
+   const segments = [
+    { from: 0,  to: 39,  color: "#e74c3c" }, // Critical (kiri)
+  { from: 40, to: 59,  color: "#f39c12" }, // Low
+  { from: 60, to: 79,  color: "#f1c40f" }, // Moderate
+  { from: 80, to: 100, color: "#2ecc71" }, // High (kanan)
+  ];
 
     segments.forEach(seg => {
-      const a1 = scoreToAngle(seg.from);
-      const a2 = scoreToAngle(seg.to);
-      ctx.strokeStyle = seg.color;
-      ctx.beginPath();
-      ctx.arc(cx, cy, rMid, a1, a2, false);
-      ctx.stroke();
+  const aStart = scoreToAngle(seg.from);
+  const aEnd   = scoreToAngle(seg.to);
+  ctx.strokeStyle = seg.color;
+  ctx.beginPath();
+  ctx.arc(cx, cy, rMid, aStart, aEnd, false); // clockwise
+  ctx.stroke();
     });
 
     // inner face (white)
@@ -246,23 +246,29 @@
     ctx.closePath();
     ctx.fill();
 
-    // --- labels "High" (kanan) & "Critical" (kiri) seperti contoh ---
+    // --- ring labels: "High" (kiri) & "Critical" (kanan) ---
+ctx.save();
 ctx.textAlign = "center";
 ctx.textBaseline = "middle";
-ctx.font = `700 ${Math.max(12, Math.min(16, W * 0.03))}px Arial`;
+ctx.fillStyle = "#fff";
 
-// posisi label dekat area dalam gauge
-const labelR = rInner * 0.78;
+const ringFont = Math.max(12, Math.min(16, W * 0.03));
+ctx.font = `800 ${ringFont}px Arial`;
+    
+// radius teks di tengah ring warna
+const ringTextR = rOuter - (thickness * 0.45);
+const yOff = -2;
 
-// Critical (kiri) sekitar 165° (dekat PI tapi sedikit turun)
-const critPos = polar(cx, cy, labelR, Math.PI * 0.88);
-ctx.fillStyle = "#e74c3c";
-ctx.fillText("Critical", critPos.x, critPos.y);
+// Critical kiri (tengah segmen 0-39)
+const critPos = polar(cx, cy, ringTextR, scoreToAngle(20));
+ctx.fillText("Critical", critPos.x, critPos.y + yOff);
 
-// High (kanan) sekitar 15° (dekat 0 tapi sedikit turun)
-const highPos = polar(cx, cy, labelR, Math.PI * 0.12);
-ctx.fillStyle = "#2ecc71";
-ctx.fillText("High", highPos.x, highPos.y);
+// High kanan (tengah segmen 80-100)
+const highPos = polar(cx, cy, ringTextR, scoreToAngle(90));
+ctx.fillText("High", highPos.x, highPos.y + yOff);
+
+ctx.restore();
+
     
     // outline
     ctx.strokeStyle = "#cfd4da";
