@@ -218,7 +218,7 @@
     ctx.lineWidth = thickness;
     ctx.strokeStyle = "#e9ecef";
     ctx.beginPath();
-    ctx.arc(cx, cy, rMid, Math.PI, 0, false);
+    ctx.arc(cx, cy, rMid, Math.PI, 0, true);
     ctx.stroke();
 
     // segments (Critical → Low → Moderate → High)
@@ -230,22 +230,17 @@
   ];
 
     segments.forEach(seg => {
-  let a1 = scoreToAngle(seg.from);
-  let a2 = scoreToAngle(seg.to);
-
-  // ✅ guard biar ga wrap (yang bikin hijau jadi mendominasi)
-  if (a1 < a2) [a1, a2] = [a2, a1];
-
+  
   ctx.strokeStyle = seg.color;
   ctx.beginPath();
-  ctx.arc(cx, cy, rMid, a1, a2, false); // top-half
+  ctx.arc(cx, cy, rMid, a1, a2, true); // top-half
   ctx.stroke();
     });
 
     // inner face (white)
     ctx.fillStyle = "#fff";
     ctx.beginPath();
-    ctx.arc(cx, cy, rInner, Math.PI, 0, false);
+    ctx.arc(cx, cy, rInner, Math.PI, 0, true);
     ctx.lineTo(cx, cy);
     ctx.closePath();
     ctx.fill();
@@ -260,7 +255,7 @@ const ringFont = Math.max(12, Math.min(16, W * 0.03));
 ctx.font = `800 ${ringFont}px Arial`;
     
 // radius teks di tengah ring warna
-cconst ringTextR = rMid;
+const ringTextR = rMid;
 
 // Critical kiri (tengah segmen 0-39)
 const critPos = polar(cx, cy, ringTextR, scoreToAngle(20)); // kiri
@@ -275,7 +270,7 @@ ctx.restore();
    ctx.strokeStyle = "#cfd4da";
 ctx.lineWidth = 2;
 ctx.beginPath();
-ctx.arc(cx, cy, rOuter + 1, Math.PI, 0, false);
+ctx.arc(cx, cy, rOuter + 1, Math.PI, 0, true);
 ctx.stroke();
 
     // needle
