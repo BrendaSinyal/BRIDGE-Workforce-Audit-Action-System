@@ -313,14 +313,20 @@ const pctFont = Math.max(34, Math.min(50, W * 0.085));   // <-- sebelumnya 72
 ctx.font = `800 ${pctFont}px Arial`;
 ctx.fillText(`${Math.round(score)}%`, cx, H * 0.50);
 
-// label pill (lebih kecil)
+// Move "High Readiness" below the gauge
 const lbl = String(label ?? scoreToLabel(score)).trim();
 
-// ukuran pill responsif + lebih kecil dari sebelumnya
+// Adjust the position of the label below the gauge
+const lblFont = Math.max(13, Math.min(17, W * 0.03)); // <-- sebelumnya 22
+ctx.fillStyle = "#2ecc71"; // Color for High Readiness label
+ctx.font = `800 ${lblFont}px Arial`;
+    
+// Background for High Readiness label (yellow)
 const pillW = Math.min(250, W * 0.56);  // <-- sebelumnya bisa 320 / W*0.7
-const pillH = 34;                       // <-- sebelumnya 48
+const pillH = 40;                       // Adjust the height of the background pill
+    
 const pillX = cx - pillW / 2;
-const pillY = H * 0.60;                 // <-- turunin dikit biar ga nabrak angka
+const pillY = H * 0.63;                 // <-- turunin dikit biar ga nabrak angka
 
 const pillBg =
   lbl === "High" ? "#e8f7ef" :
@@ -334,12 +340,13 @@ const pillText =
   lbl === "Low" ? "#a85a00" :
   "#a10f0f";
 
-ctx.fillStyle = pillBg;
-roundedRect(ctx, pillX, pillY, pillW, pillH, 20);
+ctx.fillStyle = "#f1c40f"; // Yellow background
+roundedRect(ctx, pillX, pillY, pillW, pillH, 20); // Rounded background
 ctx.fill();
 
+// Place the label text inside the yellow background
 const lblFont = Math.max(13, Math.min(17, W * 0.03)); // <-- sebelumnya 22
-ctx.fillStyle = pillText;
+ctx.fillStyle = "#1a7a4a"; // Green text for High Readiness
 ctx.font = `800 ${lblFont}px Arial`;
 ctx.fillText(`${lbl} Readiness`, cx, pillY + (pillH * 0.68));
   }
