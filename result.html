@@ -131,7 +131,6 @@
    * CONFIG
    ***********************/
   const API_URL = "https://script.google.com/macros/s/AKfycbxawEyd4imKhL--Y995FMk8KYZGH1oo7G6ylqr0XRJWrpQlpSN3-aOBjQv-Cy1HCkdk/exec"; 
-  // contoh: https://script.google.com/macros/s/XXXXX/exec
 
   const LABEL_COLORS = {
     High: "#2ecc71",
@@ -150,35 +149,18 @@
     if (score >= 40) return "Low";
     return "Critical";
   }
+
   function scoreToAngle(score){
     const s = clamp(score,0,100);
-    
-    // map 0..100 to 2π..π (half gauge)
-    //return (2 - (s/100)) * Math.PI;
-    
-    // 0..100 -> PI..0  (0% kiri, 100% kanan)
     return Math.PI + (s/100) * Math.PI;
-
-    // Map 0..100 to 0..π (Full Half Circle)
-    //return Math.PI - (s / 100) * Math.PI; // for left to right
   }
+
   function getParam(name){
     const u = new URL(window.location.href);
     const v = u.searchParams.get(name);
     return v ? v.trim() : "";
   }
-  function roundedRect(ctx, x, y, w, h, r){
-    ctx.beginPath();
-    ctx.moveTo(x+r, y);
-    ctx.arcTo(x+w, y, x+w, y+h, r);
-    ctx.arcTo(x+w, y+h, x, y+h, r);
-    ctx.arcTo(x, y+h, x, y, r);
-    ctx.arcTo(x, y, x+w, y, r);
-    ctx.closePath();
-  }
-  function labelColor(label){
-    return LABEL_COLORS[label] || "#e74c3c";
-  }
+
   function resizeCanvas(canvas){
     const dpr = window.devicePixelRatio || 1;
     const cssW = canvas.clientWidth;
@@ -188,6 +170,7 @@
     const ctx = canvas.getContext("2d");
     ctx.setTransform(dpr,0,0,dpr,0,0);
   }
+
   function polar(cx, cy, r, ang){
     return { x: cx + Math.cos(ang) * r, y: cy + Math.sin(ang) * r };
   }
@@ -204,19 +187,14 @@
     const H = canvas.clientHeight;
     ctx.clearRect(0,0,W,H);
 
-    // Put center near bottom so arc fits nicely
     const cx = W/2;
     const cy = H * 0.92;
 
-    // Outer radius tuned for half gauge
     const rOuter = Math.min(W * 0.36, H * 0.92);
-
-    // ✅ make it THICKER than before:
-    const thickness = Math.max(38, rOuter * 0.22);  // <-- tebelin di sini
+    const thickness = Math.max(38, rOuter * 0.22);
     const rMid = rOuter - thickness/2;
     const rInner = rOuter - thickness - 16;
 
-    // background arc
     ctx.lineCap = "butt";
     ctx.lineWidth = thickness;
     ctx.strokeStyle = "#e9ecef";
@@ -224,68 +202,54 @@
     ctx.arc(cx, cy, rMid, Math.PI, 0, false);
     ctx.stroke();
 
-    // segments (Critical → Low → Moderate → High)
-   const segments = [
-    { from: 0,  to: 39,  color: "#e74c3c" }, // Critical (kiri)
-  { from: 40, to: 59,  color: "#f39c12" }, // Low
-  { from: 60, to: 79,  color: "#f1c40f" }, // Moderate
-  { from: 80, to: 100, color: "#2ecc71" }, // High (kanan)
-  ];
+    const segments = [
+      { from: 0, to: 39, color: "#e74c3c" }, 
+      { from: 40, to: 59, color: "#f39c12" },
+      { from: 60, to: 79, color: "#f1c40f" },
+      { from: 80, to: 100, color: "#2ecc71" },
+    ];
 
     segments.forEach(seg => {
-  
-    const a1 = scoreToAngle(seg.from);
-  const a2 = scoreToAngle(seg.to);
-
-      // Check for correct angle direction
-  if (a1 > a2) [a1, a2] = [a2, a1];
-      
-  ctx.strokeStyle = seg.color;
-  ctx.beginPath();
-  ctx.arc(cx, cy, rMid, a1, a2, false);
-  ctx.stroke();
+      const a1 = scoreToAngle(seg.from);
+      const a2 = scoreToAngle(seg.to);
+      if (a1 > a2) [a1, a2] = [a2, a1];
+      ctx.strokeStyle = seg.color;
+      ctx.beginPath();
+      ctx.arc(cx, cy, rMid, a1, a2, false);
+      ctx.stroke();
     });
 
-    // inner face (white)
     ctx.fillStyle = "#fff";
     ctx.beginPath();
-ctx.arc(cx, cy, rInner, Math.PI, Math.PI * 2, false);
-ctx.lineTo(cx, cy);
-ctx.closePath();
-ctx.fill();
+    ctx.arc(cx, cy, rInner, Math.PI, Math.PI * 2, false);
+    ctx.lineTo(cx, cy);
+    ctx.closePath();
+    ctx.fill();
 
-    // --- ring labels: "High" (kiri) & "Critical" (kanan) ---
-ctx.save();
-ctx.textAlign = "center";
-ctx.textBaseline = "middle";
-ctx.fillStyle = "#fff";
+    ctx.save();
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#fff";
 
-const ringFont = Math.max(8, Math.min(10, W * 0.02)); // Adjust the size even smaller if necessary
-ctx.font = `800 ${ringFont}px Arial`;
-    
-// radius teks di tengah ring warna
-const ringTextR = rMid;
+    const ringFont = Math.max(8, Math.min(10, W * 0.02));
+    ctx.font = `800 ${ringFont}px Arial`;
 
-// Critical kiri (tengah segmen 0-39)
-const critPos = polar(cx, cy, ringTextR, scoreToAngle(20)); // kiri
-ctx.fillText("Critical", critPos.x, critPos.y);
+    const ringTextR = rMid;
+    const critPos = polar(cx, cy, ringTextR, scoreToAngle(20));
+    ctx.fillText("Critical", critPos.x, critPos.y);
 
-// High kanan (tengah segmen 80-100)
-const highPos = polar(cx, cy, ringTextR, scoreToAngle(90)); // kanan
-ctx.fillText("High", highPos.x, highPos.y);
-ctx.restore();
-    
-    // outline
-   ctx.strokeStyle = "#cfd4da";
-ctx.lineWidth = 2;
-ctx.beginPath();
-ctx.arc(cx, cy, rOuter + 1, Math.PI, Math.PI * 2, false);
-ctx.stroke();
+    const highPos = polar(cx, cy, ringTextR, scoreToAngle(90));
+    ctx.fillText("High", highPos.x, highPos.y);
+    ctx.restore();
 
-    // needle
+    ctx.strokeStyle = "#cfd4da";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, rOuter + 1, Math.PI, Math.PI * 2, false);
+    ctx.stroke();
+
     const ang = scoreToAngle(score);
     const needleLen = rInner * 0.98;
-
     const tip = polar(cx, cy, needleLen, ang);
     const back = polar(cx, cy, 18, ang + Math.PI);
     const perp = ang + Math.PI/2;
@@ -301,55 +265,44 @@ ctx.stroke();
     ctx.closePath();
     ctx.fill();
 
-    // hub
     ctx.beginPath();
     ctx.arc(cx, cy, 13, 0, Math.PI*2);
     ctx.fill();
 
-    // center text: percent (lebih kecil + responsif)
-ctx.textAlign = "center";
-ctx.fillStyle = "#0a2a5a";
-const pctFont = Math.max(34, Math.min(50, W * 0.085));   // <-- sebelumnya 72
-ctx.font = `800 ${pctFont}px Arial`;
-ctx.fillText(`${Math.round(score)}%`, cx, H * 0.50);
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#0a2a5a";
+    const pctFont = Math.max(34, Math.min(50, W * 0.085));
+    ctx.font = `800 ${pctFont}px Arial`;
+    ctx.fillText(`${Math.round(score)}%`, cx, H * 0.50);
 
-// Move "High Readiness" below the gauge
-const lbl = String(label ?? scoreToLabel(score)).trim();
-   
-// Background for High Readiness label (yellow)
-const pillW = Math.min(250, W * 0.56);  // <-- sebelumnya bisa 320 / W*0.7
-const pillH = 40;                       // Adjust the height of the background pill
-    
-const pillX = cx - pillW / 2;
-const pillY = H * 0.63;                 // <-- turunin dikit biar ga nabrak angka
+    const lbl = String(label ?? scoreToLabel(score)).trim();
+    const pillW = Math.min(250, W * 0.56);
+    const pillH = 40;
+    const pillX = cx - pillW / 2;
+    const pillY = H * 0.63;
 
-const pillBg =
-  lbl === "High" ? "#e8f7ef" :
-  lbl === "Moderate" ? "#fff4d8" :
-  lbl === "Low" ? "#ffe9d6" :
-  "#ffe1e1";
+    const pillBg = 
+      lbl === "High" ? "#e8f7ef" :
+      lbl === "Moderate" ? "#fff4d8" :
+      lbl === "Low" ? "#ffe9d6" :
+      "#ffe1e1";
 
-const pillText =
-  lbl === "High" ? "#1a7a4a" :
-  lbl === "Moderate" ? "#9a6a00" :
-  lbl === "Low" ? "#a85a00" :
-  "#a10f0f";
+    const pillText = 
+      lbl === "High" ? "#1a7a4a" :
+      lbl === "Moderate" ? "#9a6a00" :
+      lbl === "Low" ? "#a85a00" :
+      "#a10f0f";
 
-ctx.fillStyle = "#f1c40f"; // Yellow background
-roundedRect(ctx, pillX, pillY, pillW, pillH, 20); // Rounded background
-ctx.fill();
+    ctx.fillStyle = "#f1c40f"; 
+    roundedRect(ctx, pillX, pillY, pillW, pillH, 20); 
+    ctx.fill();
 
-// Place the label text inside the yellow background
-const lblFont = Math.max(13, Math.min(17, W * 0.03)); // <-- sebelumnya 22
-//ctx.fillStyle = "#1a7a4a"; // Green text for High Readiness
-ctx.fillStyle = "#2ecc71"; // Color for High Readiness label
-ctx.font = `800 ${lblFont}px Arial`;
-ctx.fillText(`${lbl} Readiness`, cx, pillY + (pillH * 0.68));
+    const lblFont = Math.max(13, Math.min(17, W * 0.03)); 
+    ctx.fillStyle = "#2ecc71"; 
+    ctx.font = `800 ${lblFont}px Arial`;
+    ctx.fillText(`${lbl} Readiness`, cx, pillY + (pillH * 0.68));
   }
 
-  /***********************
-   * Bars (dynamic colour)
-   ***********************/
   function classByScore(score){
     const s = Number(score);
     if (isNaN(s)) return "c-mod";
@@ -367,9 +320,6 @@ ctx.fillText(`${lbl} Readiness`, cx, pillY + (pillH * 0.68));
     document.getElementById(valId).textContent = (isNaN(s) ? "—%" : Math.round(s) + "%");
   }
 
-  /***********************
-   * JSONP load
-   ***********************/
   function init(){
     const token = getParam("t");
     const errEl = document.getElementById("err");
@@ -387,38 +337,33 @@ ctx.fillText(`${lbl} Readiness`, cx, pillY + (pillH * 0.68));
           return;
         }
 
-        // ✅ match Apps Script response: totalScore + readiness + section.*
         const rawScore = resp.totalScore ?? resp.total ?? resp.score ?? resp.total_readiness;
-const scoreNum = Number(rawScore);
+        const scoreNum = Number(rawScore);
 
-if (Number.isNaN(scoreNum)) {
-  errEl.textContent = "Invalid score from API (cek field totalScore/total).";
-  return;
-}
+        if (Number.isNaN(scoreNum)) {
+          errEl.textContent = "Invalid score from API (cek field totalScore/total).";
+          return;
+        }
 
-const score = clamp(scoreNum, 0, 100);
+        const score = clamp(scoreNum, 0, 100);
+        const labelRaw = resp.readiness ?? resp.label;
+        const label = String(labelRaw ?? scoreToLabel(score)).trim();
 
-const labelRaw = resp.readiness ?? resp.label;
-const label = String(labelRaw ?? scoreToLabel(score)).trim();
+        currentScore = score;
+        currentLabel = label;
 
-currentScore = score;
-currentLabel = label;
+        document.getElementById("overallScore").textContent = `${Math.round(score)}%`;
+        document.getElementById("overallLabel").textContent = `${label} Readiness`;
 
-        // overall text
-       document.getElementById("overallScore").textContent = `${Math.round(score)}%`;
-document.getElementById("overallLabel").textContent = `${label} Readiness`;
-
-        // draw gauge
         drawGauge(score, label);
 
-        // section bars
         const sec = resp.section ?? resp.sections ?? {};
-setBar("barBuild","valBuild", sec.build);
-setBar("barRec","valRec", sec.recognise ?? sec.recognize);
-setBar("barIns","valIns", sec.inspire);
-setBar("barDev","valDev", sec.develop);
-setBar("barGui","valGui", sec.guide);
-setBar("barEmp","valEmp", sec.empower);
+        setBar("barBuild","valBuild", sec.build);
+        setBar("barRec","valRec", sec.recognise ?? sec.recognize);
+        setBar("barIns","valIns", sec.inspire);
+        setBar("barDev","valDev", sec.develop);
+        setBar("barGui","valGui", sec.guide);
+        setBar("barEmp","valEmp", sec.empower);
 
       } finally {
         try { delete window[cbName]; } catch(e){}
@@ -426,7 +371,6 @@ setBar("barEmp","valEmp", sec.empower);
     };
 
     const s = document.createElement("script");
-    // ✅ IMPORTANT: include mode=byToken to match your Apps Script
     s.src = `${API_URL}?mode=byToken&t=${encodeURIComponent(token)}&callback=${encodeURIComponent(cbName)}`;
     s.onerror = () => { errEl.textContent = "Failed to load data (API error / permissions)."; };
     document.head.appendChild(s);
