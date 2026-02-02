@@ -157,10 +157,10 @@
     //return (2 - (s/100)) * Math.PI;
     
     // 0..100 -> PI..0  (0% kiri, 100% kanan)
-    //return Math.PI + (s/100) * Math.PI;
+    return Math.PI + (s/100) * Math.PI;
 
     // Map 0..100 to 0..π (Full Half Circle)
-    return Math.PI - (s / 100) * Math.PI; // for left to right
+    //return Math.PI - (s / 100) * Math.PI; // for left to right
   }
   function getParam(name){
     const u = new URL(window.location.href);
