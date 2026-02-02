@@ -293,10 +293,10 @@ function roundedRect(ctx, x, y, w, h, r) {
     const pillY = H * 0.63;
 
     const pillBg = 
-      lbl === "High" ? "#e8f7ef" :
-      lbl === "Moderate" ? "#fff4d8" :
-      lbl === "Low" ? "#ffe9d6" :
-      "#ffe1e1";
+       lbl === "High" ? "#2ecc71" : // Green for High
+  lbl === "Moderate" ? "#f1c40f" : // Yellow for Moderate
+  lbl === "Low" ? "#f39c12" : // Orange for Low
+  "#e74c3c"; // Red for Critical
 
     const pillText = 
       lbl === "High" ? "#ffffff" :
