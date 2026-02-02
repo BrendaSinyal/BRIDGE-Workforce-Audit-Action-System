@@ -233,7 +233,7 @@
   
   ctx.strokeStyle = seg.color;
   ctx.beginPath();
-  ctx.arc(cx, cy, rMid, a1, a2, true); // top-half
+  ctx.arc(cx, cy, rMid, scoreToAngle(seg.from), scoreToAngle(seg.to), true); // top-half
   ctx.stroke();
     });
 
