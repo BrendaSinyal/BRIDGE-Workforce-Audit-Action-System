@@ -134,6 +134,7 @@
   /***********************
    * CONFIG
    ***********************/
+  let needleWidth = 10;
   const API_URL = "https://script.google.com/macros/s/AKfycbxawEyd4imKhL--Y995FMk8KYZGH1oo7G6ylqr0XRJWrpQlpSN3-aOBjQv-Cy1HCkdk/exec"; 
 
   const LABEL_COLORS = {
@@ -143,8 +144,7 @@
     Critical: "#e74c3c",
   };
   
-// Move the needleWidth declaration here for clarity
-  let needleWidth = 10;
+  
   let currentScore = null;
   let currentLabel = null;
 
@@ -191,7 +191,8 @@ function roundedRect(ctx, x, y, w, h, r) {
   ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
 }
-  
+
+   
   /***********************
    * DRAW GAUGE (THICK + HALF)
    ***********************/
