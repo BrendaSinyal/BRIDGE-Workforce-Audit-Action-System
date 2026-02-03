@@ -142,7 +142,9 @@
     Low: "#f39c12",
     Critical: "#e74c3c",
   };
-
+  
+// Move the needleWidth declaration here for clarity
+  let needleWidth = 10;
   let currentScore = null;
   let currentLabel = null;
 
@@ -189,7 +191,6 @@ function roundedRect(ctx, x, y, w, h, r) {
   ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
 }
-  let needleWidth = 10;
   
   /***********************
    * DRAW GAUGE (THICK + HALF)
