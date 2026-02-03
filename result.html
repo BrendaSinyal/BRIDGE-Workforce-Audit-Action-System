@@ -260,7 +260,7 @@ function roundedRect(ctx, x, y, w, h, r) {
     ctx.stroke();
 
     const ang = scoreToAngle(score);
-    const needleLen = rInner * 0.95;
+    const needleLen = rInner * 0.90;
     const tip = polar(cx, cy, needleLen, ang);
     const back = polar(cx, cy, 18, ang + Math.PI);
     const perp = ang + Math.PI/2;
@@ -290,7 +290,7 @@ function roundedRect(ctx, x, y, w, h, r) {
     const pillW = Math.min(250, W * 0.56);
     const pillH = 40;
     const pillX = cx - pillW / 2;
-    const pillY = H * 0.70;
+    const pillY = H * 0.75;
 
     const pillBg = 
        lbl === "High" ? "#2ecc71" : // Green for High
