@@ -207,8 +207,10 @@ function roundedRect(ctx, x, y, w, h, r) {
     const rInner = rOuter - thickness - 16;
 
     ctx.lineCap = "butt";
-    ctx.lineWidth = thickness;
-    ctx.strokeStyle = "#e9ecef";
+    //ctx.lineWidth = thickness;
+    ctx.lineWidth = needleWidth;
+    //ctx.strokeStyle = "#e9ecef";
+    ctx.strokeStyle = "#2c3e50";
     ctx.beginPath();
     ctx.arc(cx, cy, rMid, Math.PI, 0, false);
     ctx.stroke();
@@ -261,6 +263,7 @@ function roundedRect(ctx, x, y, w, h, r) {
 
     const ang = scoreToAngle(score);
     const needleLen = rInner * 0.95;
+    const needleWidth = 10; // Make needle wider for better visibility
     const tip = polar(cx, cy, needleLen, ang);
     const back = polar(cx, cy, 18, ang + Math.PI);
     const perp = ang + Math.PI/2;
@@ -309,7 +312,7 @@ function roundedRect(ctx, x, y, w, h, r) {
     ctx.fill();
 
     // Place the label text inside the colored background
-const lblFont = Math.max(13, Math.min(17, W * 0.03)); // Adjusted font size for better visibility
+const lblFont = Math.max(14, Math.min(20, W * 0.05)); // Adjusted font size for better visibility
 ctx.fillStyle = pillText;
 ctx.font = `800 ${lblFont}px Arial`;
 ctx.fillText(`${lbl} Readiness`, cx, pillY + (pillH * 0.68));
