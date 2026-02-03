@@ -1,4 +1,4 @@
-<!doctype html>
+gni ya <!doctype html>
 <html>
 <head>
   <meta charset="utf-8" />
@@ -17,12 +17,8 @@
     .right { flex: 0 0 300px; }
 
     /* Canvas gauge sizing */
-    //#gauge { width: 100%; height: 200px; display:block; }
-    #gauge {
-    width: 400px;  /* Width */
-    height: 200px; /* Height */
-}
-    
+    #gauge { width: 100%; height: 200px; display:block; }
+
     /* Legend */
     .legend { font-size: 14px; }
     .legItem { display:flex; align-items:center; gap:10px; margin: 8px 0; }
@@ -134,7 +130,6 @@
   /***********************
    * CONFIG
    ***********************/
-  let needleWidth = 10;
   const API_URL = "https://script.google.com/macros/s/AKfycbxawEyd4imKhL--Y995FMk8KYZGH1oo7G6ylqr0XRJWrpQlpSN3-aOBjQv-Cy1HCkdk/exec"; 
 
   const LABEL_COLORS = {
@@ -143,8 +138,7 @@
     Low: "#f39c12",
     Critical: "#e74c3c",
   };
-  
-  
+
   let currentScore = null;
   let currentLabel = null;
 
@@ -191,8 +185,7 @@ function roundedRect(ctx, x, y, w, h, r) {
   ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
 }
-
-   
+  
   /***********************
    * DRAW GAUGE (THICK + HALF)
    ***********************/
@@ -214,10 +207,8 @@ function roundedRect(ctx, x, y, w, h, r) {
     const rInner = rOuter - thickness - 16;
 
     ctx.lineCap = "butt";
-    //ctx.lineWidth = thickness;
-    ctx.lineWidth = needleWidth;
-    //ctx.strokeStyle = "#e9ecef";
-    ctx.strokeStyle = "#2c3e50";
+    ctx.lineWidth = thickness;
+    ctx.strokeStyle = "#e9ecef";
     ctx.beginPath();
     ctx.arc(cx, cy, rMid, Math.PI, 0, false);
     ctx.stroke();
@@ -270,7 +261,6 @@ function roundedRect(ctx, x, y, w, h, r) {
 
     const ang = scoreToAngle(score);
     const needleLen = rInner * 0.95;
-    const needleWidth = 10; // Make needle wider for better visibility
     const tip = polar(cx, cy, needleLen, ang);
     const back = polar(cx, cy, 18, ang + Math.PI);
     const perp = ang + Math.PI/2;
@@ -300,7 +290,7 @@ function roundedRect(ctx, x, y, w, h, r) {
     const pillW = Math.min(250, W * 0.56);
     const pillH = 40;
     const pillX = cx - pillW / 2;
-    const pillY = H * 0.75;
+    const pillY = H * 0.68;
 
     const pillBg = 
        lbl === "High" ? "#2ecc71" : // Green for High
@@ -319,7 +309,7 @@ function roundedRect(ctx, x, y, w, h, r) {
     ctx.fill();
 
     // Place the label text inside the colored background
-const lblFont = Math.max(14, Math.min(20, W * 0.05)); // Adjusted font size for better visibility
+const lblFont = Math.max(13, Math.min(17, W * 0.03)); // Adjusted font size for better visibility
 ctx.fillStyle = pillText;
 ctx.font = `800 ${lblFont}px Arial`;
 ctx.fillText(`${lbl} Readiness`, cx, pillY + (pillH * 0.68));
@@ -359,9 +349,6 @@ ctx.fillText(`${lbl} Readiness`, cx, pillY + (pillH * 0.68));
           return;
         }
 
-         // Log the response inside the callback
-      console.log("API response:", resp);
-        
         const rawScore = resp.totalScore ?? resp.total ?? resp.score ?? resp.total_readiness;
         const scoreNum = Number(rawScore);
 
@@ -405,8 +392,6 @@ ctx.fillText(`${lbl} Readiness`, cx, pillY + (pillH * 0.68));
     if (currentScore !== null) drawGauge(currentScore, currentLabel);
   });
 
- console.log("Needle Width: ", needleWidth);
-  
   init();
 </script>
 </body>
