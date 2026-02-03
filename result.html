@@ -34,16 +34,8 @@
     .section { display:flex; align-items:center; gap:12px; padding: 10px 0; border-top: 1px solid #edf2fb; }
     .section:first-of-type { border-top: 0; }
     .secName { width: 340px; font-weight: 800; font-size: 15px; color:#0a2a5a; }
-    .secKey{
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-}
-.secDesc{
-  font-weight: 500;      /* kalau mau tetap agak tegas, atau ganti 600/700 */
-  text-transform: none;
-  letter-spacing: 0;
-}
+    .secKey{ font-weight: 900; text-transform: uppercase; letter-spacing: 0.4px; }
+    .secDesc{ font-weight: 500; text-transform: none; letter-spacing: 0; }
 
     .barWrap { flex: 1; height: 14px; background:#f0f5ff; border-radius: 999px; overflow:hidden; }
     .bar { height: 100%; width: 0%; border-radius: 999px; }
@@ -304,12 +296,12 @@ function roundedRect(ctx, x, y, w, h, r) {
       lbl === "Low" ? "#ffffff" :
       "#ffffff";
 
-    ctx.fillStyle = "pillBg"; 
+    ctx.fillStyle = pillBg; 
     roundedRect(ctx, pillX, pillY, pillW, pillH, 20); 
     ctx.fill();
 
     // Place the label text inside the colored background
-const lblFont = Math.max(13, Math.min(17, W * 0.03)); // Adjusted font size for better visibility
+const lblFont = Math.max(13, Math.min(17, W * 0.03)); 
 ctx.fillStyle = pillText;
 ctx.font = `800 ${lblFont}px Arial`;
 ctx.fillText(`${lbl} Readiness`, cx, pillY + (pillH * 0.68));
@@ -378,21 +370,9 @@ ctx.fillText(`${lbl} Readiness`, cx, pillY + (pillH * 0.68));
         setBar("barEmp","valEmp", sec.empower);
 
       } finally {
-        try { delete window[cbName]; } catch(e){}
+        try { delete window[cbName]; } catch(e){ }
       }
     };
 
     const s = document.createElement("script");
-    s.src = `${API_URL}?mode=byToken&t=${encodeURIComponent(token)}&callback=${encodeURIComponent(cbName)}`;
-    s.onerror = () => { errEl.textContent = "Failed to load data (API error / permissions)."; };
-    document.head.appendChild(s);
-  }
-
-  window.addEventListener("resize", () => {
-    if (currentScore !== null) drawGauge(currentScore, currentLabel);
-  });
-
-  init();
-</script>
-</body>
-</html>
+    s.src = `${API_URL}?mode=byToken&t=${encodeURIComponent(token)}&callback=${encodeURIComponent(cb
