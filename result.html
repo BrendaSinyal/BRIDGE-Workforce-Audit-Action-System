@@ -357,6 +357,9 @@ ctx.fillText(`${lbl} Readiness`, cx, pillY + (pillH * 0.68));
           return;
         }
 
+         // Log the response inside the callback
+      console.log("API response:", resp);
+        
         const rawScore = resp.totalScore ?? resp.total ?? resp.score ?? resp.total_readiness;
         const scoreNum = Number(rawScore);
 
@@ -400,8 +403,7 @@ ctx.fillText(`${lbl} Readiness`, cx, pillY + (pillH * 0.68));
     if (currentScore !== null) drawGauge(currentScore, currentLabel);
   });
 
-  console.log("Needle Width: ", needleWidth);
-  console.log("API response:", resp);
+ console.log("Needle Width: ", needleWidth);
   
   init();
 </script>
