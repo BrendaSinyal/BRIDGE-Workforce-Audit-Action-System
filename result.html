@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Full Report</title>
+  <title>Results</title>
 </head>
 <body style="margin:0">
 <div id="err" style="font-family:Arial;padding:16px;color:#b00020"></div>
@@ -11,27 +11,22 @@
 
 <script>
 const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxawEyd4imKhL--Y995FMk8KYZGH1oo7G6ylqr0XRJWrpQlpSN3-aOBjQv-Cy1HCkdk/exec";
-
 const token = new URLSearchParams(location.search).get("t");
 
 function load() {
-  if (!token) {
-    document.getElementById("err").textContent = "Missing token.";
-    return;
-  }
+  if (!token) { document.getElementById("err").textContent = "Missing token."; return; }
 
   const cb = "cb_" + Date.now();
   window[cb] = function(res) {
     try { delete window[cb]; } catch(e) {}
-    if (!res || !res.ok) {
-      document.getElementById("err").textContent = (res && res.error) ? res.error : "Not found.";
-      return;
-    }
-    document.getElementById("mount").innerHTML = res.reportHtml;
+    if (!res || !res.ok) { document.getElementById("err").textContent = res?.error || "Not found."; return; }
+
+    // kalau API byToken return planHtml
+    document.getElementById("mount").innerHTML = res.planHtml;
   };
 
   const s = document.createElement("script");
-  s.src = WEBAPP_URL + "?mode=reportByToken&t=" + encodeURIComponent(token) + "&callback=" + cb;
+  s.src = WEBAPP_URL + "?mode=byToken&t=" + encodeURIComponent(token) + "&callback=" + cb;
   s.onerror = () => document.getElementById("err").textContent = "Network error. Refresh.";
   document.body.appendChild(s);
 }
