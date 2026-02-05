@@ -326,23 +326,23 @@ const pillY = H * 0.63;                 // <-- turunin dikit biar ga nabrak angk
 const pillBg =
   lbl === "High" ? "#e8f7ef" :
   lbl === "Moderate" ? "#fff4d8" :
-  lbl === "Low" ? "#ffe9d6" :
+  lbl === "Low" ? "#f39c12" :
   "#ffe1e1";
 
 const pillText =
   lbl === "High" ? "#1a7a4a" :
   lbl === "Moderate" ? "#9a6a00" :
-  lbl === "Low" ? "#a85a00" :
+  lbl === "Low" ? "#ffffff" :
   "#a10f0f";
 
-ctx.fillStyle = "#f1c40f"; // Yellow background
+ctx.fillStyle = pillBg; // Yellow background
 roundedRect(ctx, pillX, pillY, pillW, pillH, 20); // Rounded background
 ctx.fill();
 
 // Place the label text inside the yellow background
 const lblFont = Math.max(13, Math.min(17, W * 0.03)); // <-- sebelumnya 22
 //ctx.fillStyle = "#1a7a4a"; // Green text for High Readiness
-ctx.fillStyle = "#2ecc71"; // Color for High Readiness label
+ctx.fillStyle = pillText; // Color for High Readiness label
 ctx.font = `800 ${lblFont}px Arial`;
 ctx.fillText(`${lbl} Readiness`, cx, pillY + (pillH * 0.68));
   }
