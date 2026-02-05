@@ -1,36 +1,442 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Results</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>B/RIDGE™ Workforce Readiness Assessment</title>
+
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; background:#fff; color:#0a2a5a; }
+    .wrap { max-width: 980px; margin: 28px auto; padding: 0 18px; }
+    .card { border: 1px solid #e7eef6; border-radius: 14px; padding: 16px 16px 18px; }
+    h1 { font-size: 26px; margin: 0 0 8px; color:#0a4aa6; font-weight:800; }
+    .topline { height: 3px; background:#c8dcf6; margin: 6px 0 14px; border-radius:999px; }
+
+    .row { display:flex; gap:18px; align-items:flex-start; flex-wrap:wrap; }
+    .left { flex: 1 1 520px; }
+    .right { flex: 0 0 300px; }
+
+    /* Canvas gauge sizing */
+    #gauge { width: 100%; height: 200px; display:block; }
+
+    /* Legend */
+    .legend { font-size: 14px; }
+    .legItem { display:flex; align-items:center; gap:10px; margin: 8px 0; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot.high { background:#2ecc71; }
+    .dot.mod { background:#f1c40f; }
+    .dot.low { background:#f39c12; }
+    .dot.crit { background:#e74c3c; }
+    .legItem b { font-weight:800; color:#0a2a5a; }
+
+    /* Section bars */
+    h3 { margin: 14px 0 8px; color:#0a2a5a; font-size: 18px; }
+    .section { display:flex; align-items:center; gap:12px; padding: 10px 0; border-top: 1px solid #edf2fb; }
+    .section:first-of-type { border-top: 0; }
+    .secName { width: 340px; font-weight: 800; font-size: 15px; color:#0a2a5a; }
+    .secKey{
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.secDesc{
+  font-weight: 500;      /* kalau mau tetap agak tegas, atau ganti 600/700 */
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+    .barWrap { flex: 1; height: 14px; background:#f0f5ff; border-radius: 999px; overflow:hidden; }
+    .bar { height: 100%; width: 0%; border-radius: 999px; }
+    .secVal { width: 60px; text-align:right; font-weight: 900; font-size: 18px; color:#0a2a5a; }
+
+    .c-high { background:#2ecc71; }
+    .c-mod  { background:#f1c40f; }
+    .c-low  { background:#f39c12; }
+    .c-crit { background:#e74c3c; }
+
+    .overall { margin-top: 14px; text-align:center; font-weight: 900; color:#0a2a5a; }
+    .overall .big { font-size: 48px; }
+    .overall .label { font-size: 18px; font-weight:800; margin-left: 6px; }
+
+    .err { color:#b00020; margin: 10px 0 0; font-weight:700; }
+  </style>
 </head>
-<body style="margin:0">
-<div id="err" style="font-family:Arial;padding:16px;color:#b00020"></div>
-<div id="mount"></div>
+
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>B/RIDGE™ Workforce Readiness Assessment</h1>
+      <div class="topline"></div>
+
+      <div class="row">
+        <div class="left">
+          <canvas id="gauge"></canvas>
+        </div>
+
+        <div class="right">
+          <div class="legend">
+            <div class="legItem"><span class="dot crit"></span><span><b>Critical</b> Readiness 0–39%</span></div>
+            <div class="legItem"><span class="dot low"></span><span><b>Low</b> Readiness 40–59%</span></div>
+            <div class="legItem"><span class="dot mod"></span><span><b>Moderate</b> Readiness 60–79%</span></div>
+            <div class="legItem"><span class="dot high"></span><span><b>High</b> Readiness 80–100%</span></div>
+          </div>
+        </div>
+      </div>
+
+      <h3>Section Scores:</h3>
+
+      <div class="section">
+        <div class="secName"><span class="secKey">Build</span><span class="secDesc"> – Foundations &amp; Structures</span></div>
+        <div class="barWrap"><div class="bar" id="barBuild"></div></div>
+        <div class="secVal" id="valBuild">—%</div>
+      </div>
+      <div class="section">
+        <div class="secName"><span class="secKey">Recognise</span><span class="secDesc"> – Acknowledge &amp; Value</span></div>
+        <div class="barWrap"><div class="bar" id="barRec"></div></div>
+        <div class="secVal" id="valRec">—%</div>
+      </div>
+      <div class="section">
+        <div class="secName"><span class="secKey">Inspire</span><span class="secDesc"> – Motivation &amp; Engagement</span></div>
+        <div class="barWrap"><div class="bar" id="barIns"></div></div>
+        <div class="secVal" id="valIns">—%</div>
+      </div>
+      <div class="section">
+        <div class="secName"><span class="secKey">Develop</span><span class="secDesc"> – Skills &amp; Growth</span></div>
+        <div class="barWrap"><div class="bar" id="barDev"></div></div>
+        <div class="secVal" id="valDev">—%</div>
+      </div>
+      <div class="section">
+        <div class="secName"><span class="secKey">Guide</span><span class="secDesc"> – Direction &amp; Support</span></div>
+        <div class="barWrap"><div class="bar" id="barGui"></div></div>
+        <div class="secVal" id="valGui">—%</div>
+      </div>
+      <div class="section">
+       <div class="secName"><span class="secKey">Empower</span><span class="secDesc"> – Ownership &amp; Sustainability</span></div>
+        <div class="barWrap"><div class="bar" id="barEmp"></div></div>
+        <div class="secVal" id="valEmp">—%</div>
+      </div>
+
+      <div class="overall">
+        Overall Readiness Score:
+        <span class="big" id="overallScore">—%</span>
+        <span class="label" id="overallLabel"></span>
+      </div>
+
+      <div class="err" id="err"></div>
+    </div>
+  </div>
 
 <script>
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxawEyd4imKhL--Y995FMk8KYZGH1oo7G6ylqr0XRJWrpQlpSN3-aOBjQv-Cy1HCkdk/exec";
-const token = new URLSearchParams(location.search).get("t");
+  /***********************
+   * CONFIG
+   ***********************/
+  const API_URL = "https://script.google.com/macros/s/AKfycbxawEyd4imKhL--Y995FMk8KYZGH1oo7G6ylqr0XRJWrpQlpSN3-aOBjQv-Cy1HCkdk/exec"; 
+  // contoh: https://script.google.com/macros/s/XXXXX/exec
 
-function load() {
-  if (!token) { document.getElementById("err").textContent = "Missing token."; return; }
-
-  const cb = "cb_" + Date.now();
-  window[cb] = function(res) {
-    try { delete window[cb]; } catch(e) {}
-    if (!res || !res.ok) { document.getElementById("err").textContent = res?.error || "Not found."; return; }
-
-    // kalau API byToken return planHtml
-    document.getElementById("mount").innerHTML = res.planHtml;
+  const LABEL_COLORS = {
+    High: "#2ecc71",
+    Moderate: "#f1c40f",
+    Low: "#f39c12",
+    Critical: "#e74c3c",
   };
 
-  const s = document.createElement("script");
-  s.src = WEBAPP_URL + "?mode=byToken&t=" + encodeURIComponent(token) + "&callback=" + cb;
-  s.onerror = () => document.getElementById("err").textContent = "Network error. Refresh.";
-  document.body.appendChild(s);
+  let currentScore = null;
+  let currentLabel = null;
+
+  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+  function scoreToLabel(score){
+    if (score >= 80) return "High";
+    if (score >= 60) return "Moderate";
+    if (score >= 40) return "Low";
+    return "Critical";
+  }
+  function scoreToAngle(score){
+    const s = clamp(score,0,100);
+    
+    // map 0..100 to 2π..π (half gauge)
+    //return (2 - (s/100)) * Math.PI;
+    
+    // 0..100 -> PI..0  (0% kiri, 100% kanan)
+    return Math.PI + (s/100) * Math.PI;
+
+    // Map 0..100 to 0..π (Full Half Circle)
+    //return Math.PI - (s / 100) * Math.PI; // for left to right
+  }
+  function getParam(name){
+    const u = new URL(window.location.href);
+    const v = u.searchParams.get(name);
+    return v ? v.trim() : "";
+  }
+  function roundedRect(ctx, x, y, w, h, r){
+    ctx.beginPath();
+    ctx.moveTo(x+r, y);
+    ctx.arcTo(x+w, y, x+w, y+h, r);
+    ctx.arcTo(x+w, y+h, x, y+h, r);
+    ctx.arcTo(x, y+h, x, y, r);
+    ctx.arcTo(x, y, x+w, y, r);
+    ctx.closePath();
+  }
+  function labelColor(label){
+    return LABEL_COLORS[label] || "#e74c3c";
+  }
+  function resizeCanvas(canvas){
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = canvas.clientWidth;
+    const cssH = canvas.clientHeight;
+    canvas.width  = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
+    const ctx = canvas.getContext("2d");
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  function polar(cx, cy, r, ang){
+    return { x: cx + Math.cos(ang) * r, y: cy + Math.sin(ang) * r };
+  }
+
+  /***********************
+   * DRAW GAUGE (THICK + HALF)
+   ***********************/
+  function drawGauge(score, label){
+    const canvas = document.getElementById("gauge");
+    resizeCanvas(canvas);
+    const ctx = canvas.getContext("2d");
+
+    const W = canvas.clientWidth;
+    const H = canvas.clientHeight;
+    ctx.clearRect(0,0,W,H);
+
+    // Put center near bottom so arc fits nicely
+    const cx = W/2;
+    const cy = H * 0.92;
+
+    // Outer radius tuned for half gauge
+    const rOuter = Math.min(W * 0.36, H * 0.92);
+
+    // ✅ make it THICKER than before:
+    const thickness = Math.max(38, rOuter * 0.22);  // <-- tebelin di sini
+    const rMid = rOuter - thickness/2;
+    const rInner = rOuter - thickness - 16;
+
+    // background arc
+    ctx.lineCap = "butt";
+    ctx.lineWidth = thickness;
+    ctx.strokeStyle = "#e9ecef";
+    ctx.beginPath();
+    ctx.arc(cx, cy, rMid, Math.PI, 0, false);
+    ctx.stroke();
+
+    // segments (Critical → Low → Moderate → High)
+   const segments = [
+    { from: 0,  to: 39,  color: "#e74c3c" }, // Critical (kiri)
+  { from: 40, to: 59,  color: "#f39c12" }, // Low
+  { from: 60, to: 79,  color: "#f1c40f" }, // Moderate
+  { from: 80, to: 100, color: "#2ecc71" }, // High (kanan)
+  ];
+
+    segments.forEach(seg => {
+  
+    const a1 = scoreToAngle(seg.from);
+  const a2 = scoreToAngle(seg.to);
+
+      // Check for correct angle direction
+  if (a1 > a2) [a1, a2] = [a2, a1];
+      
+  ctx.strokeStyle = seg.color;
+  ctx.beginPath();
+  ctx.arc(cx, cy, rMid, a1, a2, false);
+  ctx.stroke();
+    });
+
+    // inner face (white)
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+ctx.arc(cx, cy, rInner, Math.PI, Math.PI * 2, false);
+ctx.lineTo(cx, cy);
+ctx.closePath();
+ctx.fill();
+
+    // --- ring labels: "High" (kiri) & "Critical" (kanan) ---
+ctx.save();
+ctx.textAlign = "center";
+ctx.textBaseline = "middle";
+ctx.fillStyle = "#fff";
+
+const ringFont = Math.max(8, Math.min(10, W * 0.02)); // Adjust the size even smaller if necessary
+ctx.font = `800 ${ringFont}px Arial`;
+    
+// radius teks di tengah ring warna
+const ringTextR = rMid;
+
+// Critical kiri (tengah segmen 0-39)
+const critPos = polar(cx, cy, ringTextR, scoreToAngle(20)); // kiri
+ctx.fillText("Critical", critPos.x, critPos.y);
+
+// High kanan (tengah segmen 80-100)
+const highPos = polar(cx, cy, ringTextR, scoreToAngle(90)); // kanan
+ctx.fillText("High", highPos.x, highPos.y);
+ctx.restore();
+    
+    // outline
+   ctx.strokeStyle = "#cfd4da";
+ctx.lineWidth = 2;
+ctx.beginPath();
+ctx.arc(cx, cy, rOuter + 1, Math.PI, Math.PI * 2, false);
+ctx.stroke();
+
+    // needle
+    const ang = scoreToAngle(score);
+    const needleLen = rInner * 0.98;
+
+    const tip = polar(cx, cy, needleLen, ang);
+    const back = polar(cx, cy, 18, ang + Math.PI);
+    const perp = ang + Math.PI/2;
+    const left = polar(cx, cy, 7, perp);
+    const right = polar(cx, cy, 7, perp + Math.PI);
+
+    ctx.fillStyle = "#2c3e50";
+    ctx.beginPath();
+    ctx.moveTo(tip.x, tip.y);
+    ctx.lineTo(left.x, left.y);
+    ctx.lineTo(back.x, back.y);
+    ctx.lineTo(right.x, right.y);
+    ctx.closePath();
+    ctx.fill();
+
+    // hub
+    ctx.beginPath();
+    ctx.arc(cx, cy, 13, 0, Math.PI*2);
+    ctx.fill();
+
+    // center text: percent (lebih kecil + responsif)
+ctx.textAlign = "center";
+ctx.fillStyle = "#0a2a5a";
+const pctFont = Math.max(34, Math.min(50, W * 0.085));   // <-- sebelumnya 72
+ctx.font = `800 ${pctFont}px Arial`;
+ctx.fillText(`${Math.round(score)}%`, cx, H * 0.50);
+
+// Move "High Readiness" below the gauge
+const lbl = String(label ?? scoreToLabel(score)).trim();
+   
+// Background for High Readiness label (yellow)
+const pillW = Math.min(250, W * 0.56);  // <-- sebelumnya bisa 320 / W*0.7
+const pillH = 40;                       // Adjust the height of the background pill
+    
+const pillX = cx - pillW / 2;
+const pillY = H * 0.63;                 // <-- turunin dikit biar ga nabrak angka
+
+const pillBg =
+  lbl === "High" ? "#e8f7ef" :
+  lbl === "Moderate" ? "#fff4d8" :
+  lbl === "Low" ? "#ffe9d6" :
+  "#ffe1e1";
+
+const pillText =
+  lbl === "High" ? "#1a7a4a" :
+  lbl === "Moderate" ? "#9a6a00" :
+  lbl === "Low" ? "#a85a00" :
+  "#a10f0f";
+
+ctx.fillStyle = "#f1c40f"; // Yellow background
+roundedRect(ctx, pillX, pillY, pillW, pillH, 20); // Rounded background
+ctx.fill();
+
+// Place the label text inside the yellow background
+const lblFont = Math.max(13, Math.min(17, W * 0.03)); // <-- sebelumnya 22
+//ctx.fillStyle = "#1a7a4a"; // Green text for High Readiness
+ctx.fillStyle = "#2ecc71"; // Color for High Readiness label
+ctx.font = `800 ${lblFont}px Arial`;
+ctx.fillText(`${lbl} Readiness`, cx, pillY + (pillH * 0.68));
+  }
+
+  /***********************
+   * Bars (dynamic colour)
+   ***********************/
+  function classByScore(score){
+    const s = Number(score);
+    if (isNaN(s)) return "c-mod";
+    if (s >= 80) return "c-high";
+    if (s >= 60) return "c-mod";
+    if (s >= 40) return "c-low";
+    return "c-crit";
+  }
+
+  function setBar(barId, valId, score){
+    const s = clamp(Number(score), 0, 100);
+    const bar = document.getElementById(barId);
+    bar.style.width = (isNaN(s) ? 0 : Math.round(s)) + "%";
+    bar.className = "bar " + classByScore(s);
+    document.getElementById(valId).textContent = (isNaN(s) ? "—%" : Math.round(s) + "%");
+  }
+
+  /***********************
+   * JSONP load
+   ***********************/
+  function init(){
+    const token = getParam("t");
+    const errEl = document.getElementById("err");
+    if (!token){
+      errEl.textContent = "Missing parameter: ?t=";
+      return;
+    }
+
+    const cbName = "cb_" + Math.random().toString(36).slice(2);
+
+    window[cbName] = (resp) => {
+      try{
+        if (!resp || !resp.ok){
+          errEl.textContent = (resp && resp.error) ? resp.error : "No data";
+          return;
+        }
+
+        // ✅ match Apps Script response: totalScore + readiness + section.*
+        const rawScore = resp.totalScore ?? resp.total ?? resp.score ?? resp.total_readiness;
+const scoreNum = Number(rawScore);
+
+if (Number.isNaN(scoreNum)) {
+  errEl.textContent = "Invalid score from API (cek field totalScore/total).";
+  return;
 }
-load();
+
+const score = clamp(scoreNum, 0, 100);
+
+const labelRaw = resp.readiness ?? resp.label;
+const label = String(labelRaw ?? scoreToLabel(score)).trim();
+
+currentScore = score;
+currentLabel = label;
+
+        // overall text
+       document.getElementById("overallScore").textContent = `${Math.round(score)}%`;
+document.getElementById("overallLabel").textContent = `${label} Readiness`;
+
+        // draw gauge
+        drawGauge(score, label);
+
+        // section bars
+        const sec = resp.section ?? resp.sections ?? {};
+setBar("barBuild","valBuild", sec.build);
+setBar("barRec","valRec", sec.recognise ?? sec.recognize);
+setBar("barIns","valIns", sec.inspire);
+setBar("barDev","valDev", sec.develop);
+setBar("barGui","valGui", sec.guide);
+setBar("barEmp","valEmp", sec.empower);
+
+      } finally {
+        try { delete window[cbName]; } catch(e){}
+      }
+    };
+
+    const s = document.createElement("script");
+    // ✅ IMPORTANT: include mode=byToken to match your Apps Script
+    s.src = `${API_URL}?mode=byToken&t=${encodeURIComponent(token)}&callback=${encodeURIComponent(cbName)}`;
+    s.onerror = () => { errEl.textContent = "Failed to load data (API error / permissions)."; };
+    document.head.appendChild(s);
+  }
+
+  window.addEventListener("resize", () => {
+    if (currentScore !== null) drawGauge(currentScore, currentLabel);
+  });
+
+  init();
 </script>
 </body>
 </html>
