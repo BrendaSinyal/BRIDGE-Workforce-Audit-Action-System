@@ -387,6 +387,7 @@ ctx.restore();
 
 // ✅ action plan (maintenance-aware)
 if (MAINTENANCE) {
+  errEl.textContent = "";
   planMount.innerHTML = `
     <div style="
       font-family: Arial;
