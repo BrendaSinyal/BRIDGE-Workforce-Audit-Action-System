@@ -135,6 +135,7 @@
 
 <script>
   const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxawEyd4imKhL--Y995FMk8KYZGH1oo7G6ylqr0XRJWrpQlpSN3-aOBjQv-Cy1HCkdk/exec";
+  const MAINTENANCE = true;
 
   let currentScore = null;
   let currentLabel = null;
@@ -343,6 +344,32 @@ ctx.restore();
     const errEl = document.getElementById("err");
     const planMount = document.getElementById("planMount");
 
+      // ✅ Maintenance mode (stop before ANY API call)
+  if (MAINTENANCE) {
+    errEl.textContent = "";
+    planMount.innerHTML = `
+      <div style="
+        font-family: Arial;
+        padding: 24px;
+        border: 1px solid #e7eef6;
+        border-radius: 12px;
+        background: #f9fbff;
+        color: #0a2a5a;
+        text-align: center;
+      ">
+        <h2 style="margin:0 0 10px;color:#0a4aa6;">🚧 Full Report Under Maintenance</h2>
+        <p style="margin:0 0 6px;">
+          We’re currently finalising your full report and action plan.
+        </p>
+        <p style="margin:0;color:#555;font-size:13px;">
+          Please check back soon — you’ll be notified once it’s ready.
+        </p>
+      </div>
+    `;
+    
+    return; // ⛔ stop here, NO token check, NO API call
+  }
+
     if (!token){
       errEl.textContent = "Missing parameter: ?t=";
       return;
@@ -390,7 +417,7 @@ ctx.restore();
         } else {
           planMount.innerHTML = "<div style='font-family:Arial;padding:10px'>Missing planHtml.</div>";
         }
-
+        
       } finally {
         try { delete window[cbName]; } catch(e){}
       }
