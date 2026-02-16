@@ -235,18 +235,25 @@ ctx.textAlign = "center";
 ctx.textBaseline = "middle";
 ctx.fillStyle = "#fff";
 
-const ringFont = Math.max(8, Math.min(10, W * 0.02)); // ✅ kecil & responsif
+const ringFont = Math.max(7, Math.min(9, W * 0.018)); // ✅ kecil & responsif
 ctx.font = `800 ${ringFont}px Arial`;
 
-const ringTextR = rMid;
+const ringTextR = rMid - 2;
 
-// Critical kiri (tengah segmen 0-39)
-const critPos = polar(cx, cy, ringTextR, scoreToAngle(20));
-ctx.fillText("Critical", critPos.x, critPos.y);
+// label di tengah tiap segmen
+    const isSmall = W < 420; // threshold, bisa kamu adjust
+const labels = [
+  { text: "Critical", mid: 20 },   // 0–39
+  { text: "Low",      mid: 50 },   // 40–59
+  { text: "Moderate", mid: 70 },   // 60–79
+  { text: "High",     mid: 90 },   // 80–100
+];
 
-// High kanan (tengah segmen 80-100)
-const highPos = polar(cx, cy, ringTextR, scoreToAngle(90));
-ctx.fillText("High", highPos.x, highPos.y);
+    labels.forEach(l => {
+  const p = polar(cx, cy, ringTextR, scoreToAngle(l.mid));
+  ctx.fillText(l.text, p.x, p.y);
+});
+
 
 ctx.restore();
 
