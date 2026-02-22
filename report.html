@@ -57,23 +57,26 @@
   
   .planHeader{
   display:flex;
+  flex-direction: column;      /* stack: logo + title */
   align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding: 14px 16px 10px;
+  justify-content:center;
+  gap: 10px;
+  padding: 18px 16px 14px;
   border-bottom: 1px solid #edf2fb;
+  text-align:center;
 }
 
 .planHeader .title{
   font-weight: 900;
   color:#0a4aa6;
-  font-size: 18px;
+  font-size: 20px;
   line-height: 1.2;
 }
 
 .planLogo{
-  height: 34px;     /* adjust */
-  max-width: 180px; /* adjust */
+  height: 72px;               /* ✅ lebih besar */
+  max-width: 420px;           /* ✅ biar bisa melebar */
+  width: auto;
   object-fit: contain;
 }
 
@@ -449,13 +452,15 @@ if (MAINTENANCE) {
 
     planMount.innerHTML = `
     <div class="planHeader">
-      <div class="title">B/RIDGE™ Workforce Action Plan</div>
-      <img class="planLogo"
+     <img class="planLogo"
      src="${LOGO_URL}"
      alt="B/RIDGE logo"
      referrerpolicy="no-referrer"
      crossorigin="anonymous"
-     onerror="this.style.display='none'; console.log('LOGO FAILED', this.src);">
+      loading="lazy"
+     onerror="this.style.display='none'; console.log('LOGO FAILED', this.src);"
+     >
+      <div class="title">B/RIDGE™ Workforce Action Plan</div>
     </div>
     <div class="planInner">
       ${body}
