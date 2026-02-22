@@ -375,6 +375,21 @@ ctx.restore();
     return m ? m[1] : String(html || "");
   }
 
+  function extractStyles(html){
+  return (String(html || "").match(/<style[^>]*>[\s\S]*?<\/style>/ig) || []).join("\n");
+}
+
+function stripStyles(html){
+  return String(html || "").replace(/<style[^>]*>[\s\S]*?<\/style>/ig, "");
+}
+
+function extractPlan(html){
+  const styles = extractStyles(html);
+  const body = extractBodyInner(stripStyles(html));
+  return { styles, body };
+}
+
+  
   function init(){
     const token = getParam("t");
     const errEl = document.getElementById("err");
@@ -448,21 +463,20 @@ if (MAINTENANCE) {
 } else {
   // 🚀 normal mode
   if (resp.planHtml) {
-    const body = extractBodyInner(resp.planHtml);
+    const { styles, body } = extractPlan(resp.planHtml);
 
     planMount.innerHTML = `
     <div class="planHeader">
      <img class="planLogo"
      src="${LOGO_URL}"
      alt="B/RIDGE logo"
-     referrerpolicy="no-referrer"
-     crossorigin="anonymous"
-      loading="lazy"
+     loading="lazy"
      onerror="this.style.display='none'; console.log('LOGO FAILED', this.src);"
      >
       <div class="title">B/RIDGE™ Workforce Action Plan</div>
     </div>
     <div class="planInner">
+      ${styles}
       ${body}
     </div>
   `;
@@ -478,7 +492,7 @@ if (MAINTENANCE) {
 
     const s = document.createElement("script");
     // ✅ pakai byToken karena itu yang balikin planHtml
-    s.src = `${WEBAPP_URL}?mode=byToken&t=${encodeURIComponent(token)}&callback=${encodeURIComponent(cbName)}`;
+    s.src = `${WEBAPP_URL}?mode=byToken&t=${encodeURIComponent(token)}&callback=${encodeURIComponent(cbName)}&ts=${Date.now()}`;
     s.onerror = () => { errEl.textContent = "Failed to load data (API error / permissions)."; };
     document.head.appendChild(s);
   }
