@@ -158,7 +158,10 @@
   </div>
 
 <script>
-  const LOGO_URL = "https://drive.google.com/uc?id=18XTOaCJ3vueMpYIpPvXMSYYSWLzFL6-n";
+  
+  const FILE_ID = "18XTOaCJ3vueMpYIpPvXMSYYSWLzFL6-n";
+  const LOGO_URL = `https://drive.google.com/thumbnail?id=${FILE_ID}&sz=w600`;
+
   const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxawEyd4imKhL--Y995FMk8KYZGH1oo7G6ylqr0XRJWrpQlpSN3-aOBjQv-Cy1HCkdk/exec";
   const MAINTENANCE = false;
 
@@ -449,7 +452,12 @@ if (MAINTENANCE) {
     planMount.innerHTML = `
     <div class="planHeader">
       <div class="title">B/RIDGE™ Workforce Action Plan</div>
-      <img class="planLogo" src="${LOGO_URL}" alt="B/RIDGE logo">
+      <img class="planLogo"
+     src="${LOGO_URL}"
+     alt="B/RIDGE logo"
+     referrerpolicy="no-referrer"
+     crossorigin="anonymous"
+     onerror="this.style.display='none'; console.log('LOGO FAILED', this.src);">
     </div>
     <div class="planInner">
       ${body}
