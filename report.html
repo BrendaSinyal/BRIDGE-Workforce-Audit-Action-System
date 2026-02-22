@@ -54,6 +54,29 @@
     .planWrap { margin-top: 16px; }
     .planCard { border: 1px solid #e7eef6; border-radius: 14px; padding: 0; overflow:hidden; background:#fff; }
     .planInner { padding: 14px 16px 18px; }
+  
+  .planHeader{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid #edf2fb;
+}
+
+.planHeader .title{
+  font-weight: 900;
+  color:#0a4aa6;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.planLogo{
+  height: 34px;     /* adjust */
+  max-width: 180px; /* adjust */
+  object-fit: contain;
+}
+
   </style>
 </head>
 
@@ -125,8 +148,9 @@
     <!-- ACTION PLAN -->
     <div class="planWrap">
       <div class="planCard">
-        <div class="planInner" id="planMount">
-          <!-- action plan will be injected here -->
+       <!--<div class="planInner" id="planMount"> -->
+        <div id="planMount">
+        <!-- action plan will be injected here -->
         </div>
       </div>
     </div>
@@ -134,6 +158,7 @@
   </div>
 
 <script>
+  const LOGO_URL = "https://drive.google.com/uc?export=view&id=18XTOaCJ3vueMpYIpPvXMSYYSWLzFL6-n";
   const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxawEyd4imKhL--Y995FMk8KYZGH1oo7G6ylqr0XRJWrpQlpSN3-aOBjQv-Cy1HCkdk/exec";
   const MAINTENANCE = false;
 
@@ -419,12 +444,22 @@ if (MAINTENANCE) {
 } else {
   // 🚀 normal mode
   if (resp.planHtml) {
-    planMount.innerHTML = extractBodyInner(resp.planHtml);
-  } else {
-    planMount.innerHTML = "<div>Missing planHtml.</div>";
-  }
+    const body = extractBodyInner(resp.planHtml);
+
+    planMount.innerHTML = `
+    <div class="planHeader">
+      <div class="title">B/RIDGE™ Workforce Action Plan</div>
+      <img class="planLogo" src="${LOGO_URL}" alt="B/RIDGE logo">
+    </div>
+    <div class="planInner">
+      ${body}
+    </div>
+  `;
+} else {
+  planMount.innerHTML = "<div>Missing planHtml.</div>";
 }
-        
+}       
+
       } finally {
         try { delete window[cbName]; } catch(e){}
       }
