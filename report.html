@@ -1,6 +1,8 @@
 <!doctype html>
 <html>
 <head>
+  <style id="planStyles"></style>
+
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>B/RIDGE™ Full Report</title>
@@ -55,17 +57,6 @@
     .planCard { border: 1px solid #e7eef6; border-radius: 14px; padding: 0; overflow:hidden; background:#fff; }
     .planInner { padding: 14px 16px 18px; }
   
-  .planHeader{
-  display:flex;
-  flex-direction: column;      /* stack: logo + title */
-  align-items:center;
-  justify-content:center;
-  gap: 10px;
-  padding: 18px 16px 14px;
-  border-bottom: 1px solid #edf2fb;
-  text-align:center;
-}
-
 .planHeader .title{
   font-weight: 900;
   color:#0a4aa6;
@@ -73,12 +64,6 @@
   line-height: 1.2;
 }
 
-.planLogo{
-  height: 72px;               /* ✅ lebih besar */
-  max-width: 420px;           /* ✅ biar bisa melebar */
-  width: auto;
-  object-fit: contain;
-}
 
   </style>
 </head>
@@ -465,18 +450,13 @@ if (MAINTENANCE) {
   if (resp.planHtml) {
     const { styles, body } = extractPlan(resp.planHtml);
 
-    planMount.innerHTML = `
-    <div class="planHeader">
-     <img class="planLogo"
-     src="${LOGO_URL}"
-     alt="B/RIDGE logo"
-     loading="lazy"
-     onerror="this.style.display='none'; console.log('LOGO FAILED', this.src);"
-     >
-      <div class="title">B/RIDGE™ Workforce Action Plan</div>
-    </div>
+  // ✅ inject CSS template ke tag khusus (biar kebaca browser)
+  document.getElementById("planStyles").textContent =
+    styles.replace(/<\/?style[^>]*>/g, "");
+
+  // ✅ inject body plan
+  planMount.innerHTML = `
     <div class="planInner">
-      ${styles}
       ${body}
     </div>
   `;
