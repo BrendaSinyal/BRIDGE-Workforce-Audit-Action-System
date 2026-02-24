@@ -437,24 +437,39 @@ if (MAINTENANCE) {
   `;
 } else {
   // 🚀 normal mode
-  if (resp.planHtml) {
-    const { styles, body } = extractPlan(resp.planHtml);
+  if (!resp.planHtml) {
+    planMount.innerHTML = "<div>Missing planHtml.</div>";
+    return;
+  }
 
-  // ✅ inject CSS template ke tag khusus (biar kebaca browser)
+  const { styles, body } = extractPlan(resp.planHtml);
+
+  // 1) Inject CSS template plan
   document.getElementById("planStyles").textContent =
     styles.replace(/<\/?style[^>]*>/g, "");
 
-  // ✅ inject body plan
-  planMount.innerHTML = `
-    <div class="planInner">
-      ${body}
-    </div>
-  `;
-} else {
-  planMount.innerHTML = "<div>Missing planHtml.</div>";
-}
-}       
+  // 2) Inject isi plan
+  planMount.innerHTML = `<div class="planInner">${body}</div>`;
 
+  // 3) Inject logo header (dari kolom J2 via resp.logoUrl)
+  const logoUrl = String(resp.logoUrl || "").trim();
+  if (logoUrl) {
+    const header = document.createElement("div");
+    header.className = "apHeader";
+    header.innerHTML = `
+      <img class="apLogo" alt="B/RIDGE logo" loading="lazy">
+      <div class="apTitle">B/RIDGE™ Workforce Action Plan</div>
+    `;
+    header.querySelector("img").src = logoUrl;
+
+    const container =
+      planMount.querySelector(".container") ||
+      planMount.querySelector(".planInner") ||
+      planMount;
+
+    container.prepend(header);
+  }
+}   
       } finally {
         try { delete window[cbName]; } catch(e){}
       }
