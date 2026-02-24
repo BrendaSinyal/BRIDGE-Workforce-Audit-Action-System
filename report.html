@@ -452,6 +452,7 @@ if (MAINTENANCE) {
   planMount.innerHTML = `<div class="planInner">${body}</div>`;
 
   // 3) Inject logo header (dari kolom J2 via resp.logoUrl)
+  console.log("DEBUG logoUrl:", resp.logoUrl);
   const logoUrl = String(resp.logoUrl || "").trim();
   if (logoUrl) {
     const header = document.createElement("div");
