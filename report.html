@@ -450,9 +450,10 @@ if (MAINTENANCE) {
   if (resp.planHtml) {
     const { styles, body } = extractPlan(resp.planHtml);
 
-  // ✅ inject CSS template ke tag khusus (biar kebaca browser)
-  document.getElementById("planStyles").textContent =
-    styles.replace(/<\/?style[^>]*>/g, "");
+// ✅ CSS dari Sheet L1 (resp.planCss)
+const cssFromSheet = String(resp.planCss || "");
+document.getElementById("planStyles").textContent =
+  cssFromSheet.replace(/<\/?style[^>]*>/gi, "");
 
   // ✅ inject body plan
   planMount.innerHTML = `
