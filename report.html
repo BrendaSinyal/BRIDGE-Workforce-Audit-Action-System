@@ -448,38 +448,22 @@ if (MAINTENANCE) {
 } else {
   // 🚀 normal mode
   if (resp.planHtml) {
-    const { styles, body } = extractPlan(resp.planHtml);
+    const { body } = extractPlan(resp.planHtml);
 
 // ✅ CSS dari Sheet L1 (resp.planCss)
 const cssFromSheet = String(resp.planCss || "");
 document.getElementById("planStyles").textContent =
   cssFromSheet.replace(/<\/?style[^>]*>/gi, "");
 
-  // ✅ inject body plan
-  planMount.innerHTML = `
-    <div class="planInner">
-      ${body}
-    </div>
-  `;
+// 1) ambil body (hasil extract)
+let html = String(body || "");
 
-    // ✅ inject logo header (pakai resp.logoUrl kalau ada, fallback ke LOGO_URL)
-const logoUrl = String(resp.logoUrl || LOGO_URL || "").trim();
-if (logoUrl) {
-  const header = document.createElement("div");
-  header.className = "apHeader";
-  header.innerHTML = `
-    <img class="apLogo" alt="B/RIDGE logo" loading="lazy">
-    <div class="apTitle">B/RIDGE™ Workforce Action Plan</div>
-  `;
+// 2) ✅ replace placeholder dari Sheet
+html = html.replaceAll("{{logoUrl}}", String(resp.logoUrl || LOGO_URL || ""));
+html = html.replaceAll("{{planTitle}}", String(resp.planTitle || "B/RIDGE™ Workforce Action Plan"));
 
-  const img = header.querySelector("img");
-  img.src = logoUrl;
-  img.onerror = () => console.log("LOGO FAILED:", logoUrl);
-  img.onload  = () => console.log("LOGO OK:", logoUrl);
-
-  // taruh header di dalam .container jika ada, kalau tidak ya di planMount
-  const container = planMount.querySelector(".container") || planMount;
-  container.prepend(header);
+// 3) inject hasil final
+planMount.innerHTML = `<div class="planInner">${html}</div>`;
 }
     
 } else {
