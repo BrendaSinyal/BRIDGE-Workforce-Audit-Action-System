@@ -444,9 +444,10 @@ if (MAINTENANCE) {
 
   const { styles, body } = extractPlan(resp.planHtml);
 
-  // 1) Inject CSS template plan
-  document.getElementById("planStyles").textContent =
-    styles.replace(/<\/?style[^>]*>/g, "");
+// ✅ CSS dari Sheet L1 (resp.planCss)
+const cssFromSheet = String(resp.planCss || "");
+document.getElementById("planStyles").textContent =
+  cssFromSheet.replace(/<\/?style[^>]*>/gi, "");
 
   // 2) Inject isi plan
   planMount.innerHTML = `<div class="planInner">${body}</div>`;
