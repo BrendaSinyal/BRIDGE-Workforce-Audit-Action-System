@@ -461,6 +461,27 @@ document.getElementById("planStyles").textContent =
       ${body}
     </div>
   `;
+
+    // ✅ inject logo header (pakai resp.logoUrl kalau ada, fallback ke LOGO_URL)
+const logoUrl = String(resp.logoUrl || LOGO_URL || "").trim();
+if (logoUrl) {
+  const header = document.createElement("div");
+  header.className = "apHeader";
+  header.innerHTML = `
+    <img class="apLogo" alt="B/RIDGE logo" loading="lazy">
+    <div class="apTitle">B/RIDGE™ Workforce Action Plan</div>
+  `;
+
+  const img = header.querySelector("img");
+  img.src = logoUrl;
+  img.onerror = () => console.log("LOGO FAILED:", logoUrl);
+  img.onload  = () => console.log("LOGO OK:", logoUrl);
+
+  // taruh header di dalam .container jika ada, kalau tidak ya di planMount
+  const container = planMount.querySelector(".container") || planMount;
+  container.prepend(header);
+}
+    
 } else {
   planMount.innerHTML = "<div>Missing planHtml.</div>";
 }
