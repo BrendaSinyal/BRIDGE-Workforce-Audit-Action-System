@@ -349,22 +349,7 @@ ctx.restore();
     const m = String(html || "").match(/<body[^>]*>([\s\S]*)<\/body>/i);
     return m ? m[1] : String(html || "");
   }
-
-  function extractStyles(html){
-  return (String(html || "").match(/<style[^>]*>[\s\S]*?<\/style>/ig) || []).join("\n");
-}
-
-function stripStyles(html){
-  return String(html || "").replace(/<style[^>]*>[\s\S]*?<\/style>/ig, "");
-}
-
-function extractPlan(html){
-  const styles = extractStyles(html);
-  const body = extractBodyInner(stripStyles(html));
-  return { styles, body };
-}
-
-  
+ 
   function init(){
     const token = getParam("t");
     const errEl = document.getElementById("err");
