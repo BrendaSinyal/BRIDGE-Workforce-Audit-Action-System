@@ -57,6 +57,14 @@
     .planCard { border: 1px solid #e7eef6; border-radius: 14px; padding: 0; overflow:hidden; background:#fff; }
     .planInner { padding: 14px 16px 18px; }
   
+.planHeader .title{
+  font-weight: 900;
+  color:#0a4aa6;
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+
   </style>
 </head>
 
@@ -138,6 +146,8 @@
   </div>
 
 <script>
+  
+  const LOGO_URL = "./assets/bridge-logo.png";
   const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxawEyd4imKhL--Y995FMk8KYZGH1oo7G6ylqr0XRJWrpQlpSN3-aOBjQv-Cy1HCkdk/exec";
   const MAINTENANCE = false;
 
@@ -349,7 +359,22 @@ ctx.restore();
     const m = String(html || "").match(/<body[^>]*>([\s\S]*)<\/body>/i);
     return m ? m[1] : String(html || "");
   }
- 
+
+  function extractStyles(html){
+  return (String(html || "").match(/<style[^>]*>[\s\S]*?<\/style>/ig) || []).join("\n");
+}
+
+function stripStyles(html){
+  return String(html || "").replace(/<style[^>]*>[\s\S]*?<\/style>/ig, "");
+}
+
+function extractPlan(html){
+  const styles = extractStyles(html);
+  const body = extractBodyInner(stripStyles(html));
+  return { styles, body };
+}
+
+  
   function init(){
     const token = getParam("t");
     const errEl = document.getElementById("err");
@@ -422,43 +447,24 @@ if (MAINTENANCE) {
   `;
 } else {
   // 🚀 normal mode
-  if (!resp.planHtml) {
-    planMount.innerHTML = "<div>Missing planHtml.</div>";
-    return;
-  }
+  if (resp.planHtml) {
+    const { styles, body } = extractPlan(resp.planHtml);
 
-  const { styles, body } = extractPlan(resp.planHtml);
+  // ✅ inject CSS template ke tag khusus (biar kebaca browser)
+  document.getElementById("planStyles").textContent =
+    styles.replace(/<\/?style[^>]*>/g, "");
 
-// ✅ CSS dari Sheet L1 (resp.planCss)
-const cssFromSheet = String(resp.planCss || "");
-document.getElementById("planStyles").textContent =
-  cssFromSheet.replace(/<\/?style[^>]*>/gi, "");
+  // ✅ inject body plan
+  planMount.innerHTML = `
+    <div class="planInner">
+      ${body}
+    </div>
+  `;
+} else {
+  planMount.innerHTML = "<div>Missing planHtml.</div>";
+}
+}       
 
-  // 2) Inject isi plan
-  planMount.innerHTML = `<div class="planInner">${body}</div>`;
-
-  // 3) Inject logo header (dari kolom J2 via resp.logoUrl)
-  console.log("DEBUG logoUrl:", resp.logoUrl);
-  const logoUrl = String(resp.logoUrl || "").trim();
-  if (logoUrl) {
-    const header = document.createElement("div");
-    header.className = "apHeader";
-    header.innerHTML = `
-      <img class="apLogo" alt="B/RIDGE logo" loading="lazy">
-      <div class="apTitle">B/RIDGE™ Workforce Action Plan</div>
-    `;
-    header.querySelector("img").src = logoUrl;
-    header.querySelector("img").onerror = () => console.log("LOGO FAILED:", logoUrl);
-header.querySelector("img").onload  = () => console.log("LOGO OK:", logoUrl);
-
-    const container =
-      planMount.querySelector(".container") ||
-      planMount.querySelector(".planInner") ||
-      planMount;
-
-    container.prepend(header);
-  }
-}   
       } finally {
         try { delete window[cbName]; } catch(e){}
       }
