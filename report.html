@@ -462,6 +462,8 @@ if (MAINTENANCE) {
       <div class="apTitle">B/RIDGE™ Workforce Action Plan</div>
     `;
     header.querySelector("img").src = logoUrl;
+    header.querySelector("img").onerror = () => console.log("LOGO FAILED:", logoUrl);
+header.querySelector("img").onload  = () => console.log("LOGO OK:", logoUrl);
 
     const container =
       planMount.querySelector(".container") ||
