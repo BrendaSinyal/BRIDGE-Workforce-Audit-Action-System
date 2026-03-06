@@ -212,9 +212,9 @@
       const rOuter = Math.min(W * 0.36, H * 0.92);
   
       // ✅ make it THICKER than before:
-      const thickness = Math.max(38, rOuter * 0.22);  // <-- tebelin di sini
+      const thickness = Math.max(38, rOuter * 0.35);  // <-- tebelin di sini
       const rMid = rOuter - thickness/2;
-      const rInner = rOuter - thickness - 16;
+      const rInner = Math.max(20, rOuter - thickness - 16);
   
       // background arc
       ctx.lineCap = "butt";
