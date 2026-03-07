@@ -236,20 +236,51 @@
   segSizes.forEach(seg => {
     console.log(seg.label, seg.size, "=>", (seg.size / 100) * 180, "deg");
   });
-      
-  let currentAngle = Math.PI; // mulai dari kiri
-  segSizes.forEach(seg => {
-    const span = (seg.size / 100) * Math.PI; // total gauge = 180 derajat
-    const a1 = currentAngle;
-    const a2 = currentAngle + span;
-  
-    ctx.strokeStyle = seg.color;
-    ctx.beginPath();
-    ctx.arc(cx, cy, rMid, a1, a2, false);
-    ctx.stroke();
-  
-    currentAngle = a2;
-  });
+     
+let currentAngle = Math.PI;
+
+segSizes.forEach(seg => {
+  const span = (seg.size / 100) * Math.PI;
+  const a1 = currentAngle;
+  const a2 = currentAngle + span;
+
+  console.log(
+    seg.label,
+    "start:", ((a1 - Math.PI) / Math.PI * 180).toFixed(1),
+    "end:", ((a2 - Math.PI) / Math.PI * 180).toFixed(1),
+    "span:", (span / Math.PI * 180).toFixed(1), "deg"
+  );
+
+  ctx.strokeStyle = seg.color;
+  ctx.beginPath();
+  ctx.arc(cx, cy, rMid, a1, a2, false);
+  ctx.stroke();
+
+  currentAngle = a2;
+});
+
+ctx.save();
+ctx.strokeStyle = "#111";
+ctx.lineWidth = 1;
+
+const guideAngles = [
+  Math.PI,
+  Math.PI + 0.40 * Math.PI,
+  Math.PI + 0.60 * Math.PI,
+  Math.PI + 0.80 * Math.PI,
+  Math.PI + 1.00 * Math.PI
+];
+
+guideAngles.forEach(a => {
+  const p1 = polar(cx, cy, rOuter + 8, a);
+  const p2 = polar(cx, cy, rInner - 8, a);
+  ctx.beginPath();
+  ctx.moveTo(p1.x, p1.y);
+  ctx.lineTo(p2.x, p2.y);
+  ctx.stroke();
+});
+
+ctx.restore();
   
   // draw uniform separators at boundaries
   /**
