@@ -292,10 +292,10 @@ ctx.restore();
   
   ctx.save();
   ctx.strokeStyle = "#f3f4f6";
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 4;
   boundaries.forEach(a => {
     ctx.beginPath();
-    ctx.arc(cx, cy, rMid, a - 0.003, a + 0.003, false);
+    ctx.arc(cx, cy, rMid, a - 0.004, a + 0.004, false);
     ctx.stroke();
   });
   ctx.restore();
@@ -319,7 +319,6 @@ ctx.restore();
   const ringTextR = rMid - 2;
   
   // label di tengah tiap segmen
-  /**
   const labelAngles = [
     { text: "Critical", angle: Math.PI + (0.20 * Math.PI) },
     { text: "Low", angle: Math.PI + (0.50 * Math.PI) },
@@ -331,7 +330,6 @@ ctx.restore();
     const p = polar(cx, cy, ringTextR, l.angle);
     ctx.fillText(l.text, p.x, p.y);
   });
-  **/
   ctx.restore();
       
       // outline
