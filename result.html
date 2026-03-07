@@ -258,7 +258,7 @@ segSizes.forEach(seg => {
 
   currentAngle = a2;
 });
-
+/**
 ctx.save();
 ctx.strokeStyle = "#111";
 ctx.lineWidth = 1;
@@ -281,9 +281,9 @@ guideAngles.forEach(a => {
 });
 
 ctx.restore();
-  
+**/
   // draw uniform separators at boundaries
-  /**
+  
   const boundaries = [
     Math.PI + 0.40 * Math.PI, // after Critical
     Math.PI + 0.60 * Math.PI, // after Low
@@ -299,7 +299,7 @@ ctx.restore();
     ctx.stroke();
   });
   ctx.restore();
-  **/    
+      
       // inner face (white)
       ctx.fillStyle = "#fff";
       ctx.beginPath();
