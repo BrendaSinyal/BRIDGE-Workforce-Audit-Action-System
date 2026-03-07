@@ -212,7 +212,7 @@
       const rOuter = Math.min(W * 0.36, H * 0.92);
   
       // ✅ make it THICKER than before:
-      const thickness = Math.max(38, rOuter * 0.35);  // <-- tebelin di sini
+      const thickness = Math.min(38, rOuter * 0.35);  // <-- tebelin di sini
       const rMid = rOuter - thickness/2;
       const rInner = Math.max(20, rOuter - thickness - 16);
   
@@ -251,10 +251,20 @@ segSizes.forEach(seg => {
     "span:", (span / Math.PI * 180).toFixed(1), "deg"
   );
 
+  /**
   ctx.strokeStyle = seg.color;
   ctx.beginPath();
   ctx.arc(cx, cy, rMid, a1, a2, false);
   ctx.stroke();
+  **/
+
+  ctx.fillStyle = seg.color;
+
+ctx.beginPath();
+ctx.arc(cx, cy, rOuter, a1, a2, false);
+ctx.arc(cx, cy, rInner, a2, a1, true);
+ctx.closePath();
+ctx.fill();
 
   currentAngle = a2;
 });
@@ -284,21 +294,24 @@ ctx.restore();
 **/
   // draw uniform separators at boundaries
   
-  const boundaries = [
-    Math.PI + 0.40 * Math.PI, // after Critical
-    Math.PI + 0.60 * Math.PI, // after Low
-    Math.PI + 0.80 * Math.PI  // after Moderate
-  ];
-  
-  ctx.save();
-  ctx.strokeStyle = "#f3f4f6";
-  ctx.lineWidth = 4;
-  boundaries.forEach(a => {
-    ctx.beginPath();
-    ctx.arc(cx, cy, rMid, a - 0.004, a + 0.004, false);
-    ctx.stroke();
-  });
-  ctx.restore();
+const boundaries = [
+  Math.PI + 0.40 * Math.PI,
+  Math.PI + 0.60 * Math.PI,
+  Math.PI + 0.80 * Math.PI
+];
+
+ctx.save();
+ctx.strokeStyle = "#f3f4f6";
+ctx.lineWidth = 4;
+boundaries.forEach(a => {
+  const p1 = polar(cx, cy, rOuter, a);
+  const p2 = polar(cx, cy, rInner, a);
+  ctx.beginPath();
+  ctx.moveTo(p1.x, p1.y);
+  ctx.lineTo(p2.x, p2.y);
+  ctx.stroke();
+});
+ctx.restore();
       
       // inner face (white)
       ctx.fillStyle = "#fff";
