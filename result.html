@@ -196,6 +196,7 @@
      * DRAW GAUGE (THICK + HALF)
      ***********************/
     function drawGauge(score, label){
+      console.log("drawGauge jalan", score, label);
       const canvas = document.getElementById("gauge");
       resizeCanvas(canvas);
       const ctx = canvas.getContext("2d");
