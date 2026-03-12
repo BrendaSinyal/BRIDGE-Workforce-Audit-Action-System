@@ -201,13 +201,13 @@
     const H = canvas.clientHeight;
     ctx.clearRect(0,0,W,H);
 
-    const cx = W/2;
+    const cx = W / 2;
     const cy = H * 0.92;
 
     const rOuter = Math.min(W * 0.36, H * 0.92);
-    const thickness = Math.max(38, rOuter * 0.22);
-    const rMid = rOuter - thickness/2;
-    const rInner = rOuter - thickness - 16;
+    const thickness = Math.min(38, rOuter * 0.35);
+    const rMid = rOuter - thickness / 2;
+    const rInner = Math.max(20, rOuter - thickness - 16);
 
     // background arc
     ctx.lineCap = "butt";
@@ -217,23 +217,50 @@
     ctx.arc(cx, cy, rMid, Math.PI, 0, false);
     ctx.stroke();
 
-    const segments = [
-      { from: 0,  to: 39,  color: "#e74c3c" },
-      { from: 40, to: 59,  color: "#f39c12" },
-      { from: 60, to: 79,  color: "#f1c40f" },
-      { from: 80, to: 100, color: "#2ecc71" },
+    // proportional segments
+    const segSizes = [
+      { label: "Critical", size: 40, color: "#e74c3c" },
+      { label: "Low", size: 20, color: "#f39c12" },
+      { label: "Moderate", size: 20, color: "#f1c40f" },
+      { label: "High", size: 20, color: "#2ecc71" },
     ];
 
-    segments.forEach(seg => {
-      let a1 = scoreToAngle(seg.from);
-      let a2 = scoreToAngle(seg.to);
-      if (a1 > a2) [a1, a2] = [a2, a1];
+    let currentAngle = Math.PI;
 
-      ctx.strokeStyle = seg.color;
+    segSizes.forEach(seg => {
+      const span = (seg.size / 100) * Math.PI;
+      const a1 = currentAngle;
+      const a2 = currentAngle + span;
+
+      ctx.fillStyle = seg.color;
       ctx.beginPath();
-      ctx.arc(cx, cy, rMid, a1, a2, false);
+      ctx.arc(cx, cy, rOuter, a1, a2, false);
+      ctx.arc(cx, cy, rInner, a2, a1, true);
+      ctx.closePath();
+      ctx.fill();
+
+      currentAngle = a2;
+    });
+
+    // separators
+    const boundaries = [
+      Math.PI + 0.40 * Math.PI,
+      Math.PI + 0.60 * Math.PI,
+      Math.PI + 0.80 * Math.PI
+    ];
+
+    ctx.save();
+    ctx.strokeStyle = "#f3f4f6";
+    ctx.lineWidth = 4;
+    boundaries.forEach(a => {
+      const p1 = polar(cx, cy, rOuter, a);
+      const p2 = polar(cx, cy, rInner, a);
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
       ctx.stroke();
     });
+    ctx.restore();
 
     // inner face
     ctx.fillStyle = "#fff";
@@ -243,34 +270,29 @@
     ctx.closePath();
     ctx.fill();
 
-    // --- ring labels: "High" & "Critical" (SAMA kayak result.html) ---
-ctx.save();
-ctx.textAlign = "center";
-ctx.textBaseline = "middle";
-ctx.fillStyle = "#fff";
+    // ring labels
+    ctx.save();
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#fff";
 
-const ringFont = Math.max(7, Math.min(9, W * 0.018)); // ✅ kecil & responsif
-ctx.font = `800 ${ringFont}px Arial`;
+    const ringFont = Math.max(7, Math.min(9, W * 0.018));
+    ctx.font = `800 ${ringFont}px Arial`;
 
-const ringTextR = rMid - 2;
+    const ringTextR = rMid - 2;
 
-// label di tengah tiap segmen
-    const isSmall = W < 420; // threshold, bisa kamu adjust
-const labels = [
-  { text: "Critical", mid: 20 },   // 0–39
-  { text: "Low",      mid: 50 },   // 40–59
-  { text: "Moderate", mid: 70 },   // 60–79
-  { text: "High",     mid: 90 },   // 80–100
-];
+    const labelAngles = [
+      { text: "Critical", angle: Math.PI + (0.20 * Math.PI) },
+      { text: "Low", angle: Math.PI + (0.50 * Math.PI) },
+      { text: "Moderate", angle: Math.PI + (0.70 * Math.PI) },
+      { text: "High", angle: Math.PI + (0.90 * Math.PI) },
+    ];
 
-    labels.forEach(l => {
-  const p = polar(cx, cy, ringTextR, scoreToAngle(l.mid));
-  ctx.fillText(l.text, p.x, p.y);
-});
-
-
-ctx.restore();
-
+    labelAngles.forEach(l => {
+      const p = polar(cx, cy, ringTextR, l.angle);
+      ctx.fillText(l.text, p.x, p.y);
+    });
+    ctx.restore();
 
     // outline
     ctx.strokeStyle = "#cfd4da";
@@ -285,7 +307,7 @@ ctx.restore();
 
     const tip = polar(cx, cy, needleLen, ang);
     const back = polar(cx, cy, 18, ang + Math.PI);
-    const perp = ang + Math.PI/2;
+    const perp = ang + Math.PI / 2;
     const left = polar(cx, cy, 7, perp);
     const right = polar(cx, cy, 7, perp + Math.PI);
 
@@ -298,18 +320,19 @@ ctx.restore();
     ctx.closePath();
     ctx.fill();
 
+    // hub
     ctx.beginPath();
-    ctx.arc(cx, cy, 13, 0, Math.PI*2);
+    ctx.arc(cx, cy, 13, 0, Math.PI * 2);
     ctx.fill();
 
-    // center text
+    // percent text
     ctx.textAlign = "center";
     ctx.fillStyle = "#0a2a5a";
     const pctFont = Math.max(34, Math.min(50, W * 0.085));
     ctx.font = `800 ${pctFont}px Arial`;
     ctx.fillText(`${Math.round(score)}%`, cx, H * 0.50);
 
-    // label pill
+    // readiness pill
     const lbl = String(label ?? scoreToLabel(score)).trim();
     const pillW = Math.min(250, W * 0.56);
     const pillH = 40;
