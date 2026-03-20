@@ -1,6 +1,7 @@
   <!doctype html>
   <html>
   <head>
+    <style id="planStyles"></style>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>B/RIDGE™ Workforce Readiness Assessment</title>
@@ -58,6 +59,12 @@
       .overall .big { font-size: 48px; }
       .overall .label { font-size: 18px; font-weight:800; margin-left: 6px; }
   
+
+      /* action plan container */
+      .planWrap { margin-top: 16px; }
+      .planCard { border: 1px solid #e7eef6; border-radius: 14px; padding: 0; overflow:hidden; background:#fff; }
+      .planInner { padding: 14px 16px 18px; }
+
       .err { color:#b00020; margin: 10px 0 0; font-weight:700; }
     </style>
   </head>
@@ -124,14 +131,22 @@
   
         <div class="err" id="err"></div>
       </div>
+
+      <div class="planWrap">
+        <div class="planCard">
+          <div id="planMount"></div>
+        </div>
+      </div>
+
     </div>
   
   <script>
     /***********************
      * CONFIG
      ***********************/
-    const API_URL = "https://script.google.com/macros/s/AKfycbxawEyd4imKhL--Y995FMk8KYZGH1oo7G6ylqr0XRJWrpQlpSN3-aOBjQv-Cy1HCkdk/exec"; 
-    // contoh: https://script.google.com/macros/s/XXXXX/exec
+    const LOGO_URL = "./assets/bridge-logo.png";
+    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxawEyd4imKhL--Y995FMk8KYZGH1oo7G6ylqr0XRJWrpQlpSN3-aOBjQv-Cy1HCkdk/exec";
+    const MAINTENANCE = false;
   
     const LABEL_COLORS = {
       High: "#2ecc71",
@@ -437,12 +452,64 @@ ctx.restore();
       document.getElementById(valId).textContent = (isNaN(s) ? "—%" : Math.round(s) + "%");
     }
   
+
+    function extractBodyInner(html){
+      const m = String(html || "").match(/<body[^>]*>([\s\S]*)<\/body>/i);
+      return m ? m[1] : String(html || "");
+    }
+
+    function extractStyles(html){
+      return (String(html || "").match(/<style[^>]*>[\s\S]*?<\/style>/ig) || []).join("\n");
+    }
+
+    function stripStyles(html){
+      return String(html || "").replace(/<style[^>]*>[\s\S]*?<\/style>/ig, "");
+    }
+
+    function extractPlan(html){
+      const styles = extractStyles(html);
+      const body = extractBodyInner(stripStyles(html));
+      return { styles, body };
+    }
+
+    function trimPlanToIntroduction(html){
+      const temp = document.createElement("div");
+      temp.innerHTML = String(html || "");
+
+      const walker = document.createTreeWalker(temp, NodeFilter.SHOW_ELEMENT, null);
+      let stopNode = null;
+
+      while (walker.nextNode()) {
+        const el = walker.currentNode;
+        const txt = (el.textContent || "").trim().toLowerCase();
+        if (txt.includes("plan introduction")) {
+          stopNode = el;
+          break;
+        }
+      }
+
+      if (!stopNode) return temp.innerHTML;
+
+      const out = document.createElement("div");
+      let node = temp.firstChild;
+
+      while (node) {
+        const clone = node.cloneNode(true);
+        out.appendChild(clone);
+        if (node === stopNode || (node.contains && node.contains(stopNode))) break;
+        node = node.nextSibling;
+      }
+
+      return out.innerHTML;
+    }
+
     /***********************
      * JSONP load
      ***********************/
     function init(){
       const token = getParam("t");
       const errEl = document.getElementById("err");
+      const planMount = document.getElementById("planMount");
       if (!token){
         errEl.textContent = "Missing parameter: ?t=";
         return;
@@ -497,7 +564,7 @@ ctx.restore();
   
       const s = document.createElement("script");
       // ✅ IMPORTANT: include mode=byToken to match your Apps Script
-      s.src = `${API_URL}?mode=byToken&t=${encodeURIComponent(token)}&callback=${encodeURIComponent(cbName)}`;
+      s.src = `${WEBAPP_URL}?mode=byToken&t=${encodeURIComponent(token)}&callback=${encodeURIComponent(cbName)}&ts=${Date.now()}`;
       s.onerror = () => { errEl.textContent = "Failed to load data (API error / permissions)."; };
       document.head.appendChild(s);
     }
