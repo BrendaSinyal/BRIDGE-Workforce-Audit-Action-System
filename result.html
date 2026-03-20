@@ -556,7 +556,58 @@ ctx.restore();
   setBar("barDev","valDev", sec.develop);
   setBar("barGui","valGui", sec.guide);
   setBar("barEmp","valEmp", sec.empower);
-  
+
+// action plan
+if (MAINTENANCE) {
+  planMount.innerHTML = `
+    <div class="planInner">
+      <div style="
+        font-family: Arial;
+        padding: 24px;
+        border: 1px solid #e7eef6;
+        border-radius: 12px;
+        background: #f9fbff;
+        color: #0a2a5a;
+        text-align: center;
+      ">
+        <h2 style="margin:0 0 10px;color:#0a4aa6;">
+          🚧 Full Report Under Maintenance
+        </h2>
+        <p style="margin:0 0 6px;">
+          We’re currently finalising your full report and action plan.
+        </p>
+        <p style="margin:0;color:#555;font-size:13px;">
+          Please check back soon — you’ll be notified once it’s ready.
+        </p>
+      </div>
+    </div>
+  `;
+} else {
+  if (resp.planHtml) {
+    const { styles, body } = extractPlan(resp.planHtml);
+
+    const cssFromSheet = String(resp.planCss || "").replace(/<\/?style[^>]*>/gi, "");
+    const cssFromHtml = String(styles || "").replace(/<\/?style[^>]*>/gi, "");
+
+    document.getElementById("planStyles").textContent =
+      `${cssFromHtml}\n${cssFromSheet}`;
+
+    let html = String(body || "");
+
+    html = trimPlanToIntroduction(html);
+
+    html = html.replaceAll("{{logoUrl}}", String(resp.logoUrl || LOGO_URL || ""));
+    html = html.replaceAll(
+      "{{planTitle}}",
+      String(resp.planTitle || "B/RIDGE™ Workforce Action Plan")
+    );
+
+    planMount.innerHTML = `<div class="planInner">${html}</div>`;
+  } else {
+    planMount.innerHTML = `<div class="planInner" style="color:#b00020;font-weight:700;">Missing planHtml.</div>`;
+  }
+}
+          
         } finally {
           try { delete window[cbName]; } catch(e){}
         }
