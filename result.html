@@ -472,37 +472,39 @@ ctx.restore();
       return { styles, body };
     }
 
-    function trimPlanToIntroduction(html){
-      const temp = document.createElement("div");
-      temp.innerHTML = String(html || "");
+function trimPlanToIntroduction(html){
+  const temp = document.createElement("div");
+  temp.innerHTML = String(html || "");
 
-      const walker = document.createTreeWalker(temp, NodeFilter.SHOW_ELEMENT, null);
-      let stopNode = null;
+  const normalize = (s) =>
+    String(s || "").replace(/\s+/g, " ").trim().toLowerCase();
 
-      while (walker.nextNode()) {
-        const el = walker.currentNode;
-        const txt = (el.textContent || "").trim().toLowerCase();
-        if (txt.includes("plan introduction")) {
-          stopNode = el;
-          break;
-        }
-      }
+  // cari elemen TERDALAM yang mengandung "plan introduction"
+  const elements = Array.from(temp.querySelectorAll("*")).reverse();
+  const target = elements.find(el =>
+    normalize(el.textContent).includes("plan introduction")
+  );
 
-      if (!stopNode) return temp.innerHTML;
+  if (!target) return temp.innerHTML;
 
-      const out = document.createElement("div");
-      let node = temp.firstChild;
+  // hapus semua sibling SETELAH target, naik sampai root temp
+  let current = target;
+  let parent = target.parentNode;
 
-      while (node) {
-        const clone = node.cloneNode(true);
-        out.appendChild(clone);
-        if (node === stopNode || (node.contains && node.contains(stopNode))) break;
-        node = node.nextSibling;
-      }
-
-      return out.innerHTML;
+  while (current && parent) {
+    while (current.nextSibling) {
+      current.nextSibling.remove();
     }
+    if (parent === temp) break;
+    current = parent;
+    parent = parent.parentNode;
+  }
 
+  // kalau kamu TIDAK mau tulisan "Plan Introduction" ikut tampil:
+  //target.remove();
+
+  return temp.innerHTML;
+}
     /***********************
      * JSONP load
      ***********************/
