@@ -472,39 +472,47 @@ ctx.restore();
       return { styles, body };
     }
 
-function trimPlanToIntroduction(html){
+function trimPlanToIntroductionColumn(html){
   const temp = document.createElement("div");
   temp.innerHTML = String(html || "");
 
   const normalize = (s) =>
     String(s || "").replace(/\s+/g, " ").trim().toLowerCase();
 
-  // cari elemen TERDALAM yang mengandung "plan introduction"
-  const elements = Array.from(temp.querySelectorAll("*")).reverse();
-  const target = elements.find(el =>
-    normalize(el.textContent).includes("plan introduction")
-  );
+  const rows = Array.from(temp.querySelectorAll("tr"));
+  let cutoffIndex = -1;
 
-  if (!target) return temp.innerHTML;
-
-  // hapus semua sibling SETELAH target, naik sampai root temp
-  let current = target;
-  let parent = target.parentNode;
-
-  while (current && parent) {
-    while (current.nextSibling) {
-      current.nextSibling.remove();
+  // cari index kolom "Plan Introduction"
+  for (const row of rows) {
+    const cells = Array.from(row.querySelectorAll("th, td"));
+    const idx = cells.findIndex(cell =>
+      normalize(cell.textContent).includes("plan introduction")
+    );
+    if (idx !== -1) {
+      cutoffIndex = idx;
+      break;
     }
-    if (parent === temp) break;
-    current = parent;
-    parent = parent.parentNode;
   }
 
-  // kalau kamu TIDAK mau tulisan "Plan Introduction" ikut tampil:
-  //target.remove();
+for (const row of rows) {
+  const cells = Array.from(row.querySelectorAll("th, td"));
+  console.log(cells.map(cell => normalize(cell.textContent)));
+}
+console.log("cutoffIndex:", cutoffIndex);
+  
+  if (cutoffIndex === -1) return temp.innerHTML;
+
+  // hapus semua kolom setelah "Plan Introduction"
+  rows.forEach(row => {
+    const cells = Array.from(row.querySelectorAll("th, td"));
+    cells.forEach((cell, idx) => {
+      if (idx > cutoffIndex) cell.remove();
+    });
+  });
 
   return temp.innerHTML;
 }
+    
     /***********************
      * JSONP load
      ***********************/
@@ -596,7 +604,7 @@ if (MAINTENANCE) {
 
     let html = String(body || "");
 
-    html = trimPlanToIntroduction(html);
+    html = trimPlanToIntroductionColumn(html);
 
     html = html.replaceAll("{{logoUrl}}", String(resp.logoUrl || LOGO_URL || ""));
     html = html.replaceAll(
