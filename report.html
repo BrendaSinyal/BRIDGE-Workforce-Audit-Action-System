@@ -30,8 +30,8 @@
     .legItem b { font-weight:800; color:#0a2a5a; }
 
     h3 { margin: 14px 0 8px; color:#0a2a5a; font-size: 18px; }
-  .scoreSection { display:flex; align-items:center; gap:12px; padding: 10px 0; border-top: 1px solid #edf2fb; }
-  .scoreSection:first-of-type { border-top: 0; }
+    .scoreSection { display:flex; align-items:center; gap:12px; padding: 10px 0; border-top: 1px solid #edf2fb; }
+    .scoreSection:first-of-type { border-top: 0; }
 
     .secName { width: 340px; font-weight: 800; font-size: 15px; color:#0a2a5a; }
     .secKey{ font-weight: 900; text-transform: uppercase; letter-spacing: 0.4px; }
@@ -56,23 +56,50 @@
     .planWrap { margin-top: 16px; }
     .planCard { border: 1px solid #e7eef6; border-radius: 14px; padding: 0; overflow:hidden; background:#fff; }
     .planInner { padding: 14px 16px 18px; }
-  
-.planHeader .title{
-  font-weight: 900;
-  color:#0a4aa6;
-  font-size: 20px;
-  line-height: 1.2;
-}
 
+    .planHeader .title{
+      font-weight: 900;
+      color:#0a4aa6;
+      font-size: 20px;
+      line-height: 1.2;
+    }
 
+    /* PDF button */
+    .pdfActions {
+      margin-top: 16px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    #btnDownloadPdf{
+      background:#0a4aa6;
+      color:#fff;
+      border:0;
+      border-radius:10px;
+      padding:10px 16px;
+      font-weight:700;
+      cursor:pointer;
+      font-size:14px;
+    }
+
+    #btnDownloadPdf:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+
+    /* PDF helper */
+    .pdf-avoid-break {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
   </style>
 </head>
 
 <body>
   <div class="wrap">
 
-    <!-- TOP (SAMA KAYAK RESULT.HTML) -->
-    <div class="card">
+    <!-- TOP -->
+    <div class="card pdf-avoid-break">
       <h1>B/RIDGE™ Workforce Readiness Assessment</h1>
       <div class="topline"></div>
 
@@ -135,24 +162,73 @@
 
     <!-- ACTION PLAN -->
     <div class="planWrap">
-      <div class="planCard">
-       <!--<div class="planInner" id="planMount"> -->
+      <div class="planCard pdf-avoid-break">
         <div id="planMount">
-        <!-- action plan will be injected here -->
+          <!-- action plan will be injected here -->
         </div>
       </div>
     </div>
 
+    <!-- PDF BUTTON -->
+    <div class="pdfActions">
+      <button id="btnDownloadPdf" type="button" disabled>Download Action Plan PDF</button>
+    </div>
+
   </div>
 
+  <!-- html2pdf library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
 <script>
-  
   const LOGO_URL = "./assets/bridge-logo.png";
   const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxawEyd4imKhL--Y995FMk8KYZGH1oo7G6ylqr0XRJWrpQlpSN3-aOBjQv-Cy1HCkdk/exec";
   const MAINTENANCE = false;
 
   let currentScore = null;
   let currentLabel = null;
+
+  async function downloadActionPlanPdf() {
+    const btn = document.getElementById("btnDownloadPdf");
+    const target = document.querySelector(".planCard");
+
+    if (!target || !target.innerText.trim()) {
+      alert("Action plan belum tersedia.");
+      return;
+    }
+
+    try {
+      btn.disabled = true;
+      btn.textContent = "Generating PDF...";
+
+      const opt = {
+        margin: [10, 10, 10, 10],
+        filename: "bridge-action-plan.pdf",
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          scrollY: 0
+        },
+        jsPDF: {
+          unit: "mm",
+          format: "a4",
+          orientation: "portrait"
+        },
+        pagebreak: {
+          mode: ["avoid-all", "css", "legacy"]
+        }
+      };
+
+      await html2pdf().set(opt).from(target).save();
+    } catch (e) {
+      console.error(e);
+      alert("Gagal membuat PDF.");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Download Action Plan PDF";
+    }
+  }
 
   function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
   function scoreToLabel(score){
@@ -163,7 +239,7 @@
   }
   function scoreToAngle(score){
     const s = clamp(score,0,100);
-    return Math.PI + (s/100) * Math.PI; // 0% kiri, 100% kanan (bottom semicircle)
+    return Math.PI + (s/100) * Math.PI;
   }
   function getParam(name){
     const u = new URL(window.location.href);
@@ -209,7 +285,6 @@
     const rMid = rOuter - thickness / 2;
     const rInner = Math.max(20, rOuter - thickness - 16);
 
-    // background arc
     ctx.lineCap = "butt";
     ctx.lineWidth = thickness;
     ctx.strokeStyle = "#e9ecef";
@@ -217,7 +292,6 @@
     ctx.arc(cx, cy, rMid, Math.PI, 0, false);
     ctx.stroke();
 
-    // proportional segments
     const segSizes = [
       { label: "Critical", size: 40, color: "#e74c3c" },
       { label: "Low", size: 20, color: "#f39c12" },
@@ -242,7 +316,6 @@
       currentAngle = a2;
     });
 
-    // separators
     const boundaries = [
       Math.PI + 0.40 * Math.PI,
       Math.PI + 0.60 * Math.PI,
@@ -262,7 +335,6 @@
     });
     ctx.restore();
 
-    // inner face
     ctx.fillStyle = "#fff";
     ctx.beginPath();
     ctx.arc(cx, cy, rInner, Math.PI, Math.PI * 2, false);
@@ -270,7 +342,6 @@
     ctx.closePath();
     ctx.fill();
 
-    // ring labels
     ctx.save();
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -294,14 +365,12 @@
     });
     ctx.restore();
 
-    // outline
     ctx.strokeStyle = "#cfd4da";
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.arc(cx, cy, rOuter + 1, Math.PI, Math.PI * 2, false);
     ctx.stroke();
 
-    // needle
     const ang = scoreToAngle(score);
     const needleLen = rInner * 0.98;
 
@@ -320,19 +389,16 @@
     ctx.closePath();
     ctx.fill();
 
-    // hub
     ctx.beginPath();
     ctx.arc(cx, cy, 13, 0, Math.PI * 2);
     ctx.fill();
 
-    // percent text
     ctx.textAlign = "center";
     ctx.fillStyle = "#0a2a5a";
     const pctFont = Math.max(34, Math.min(50, W * 0.085));
     ctx.font = `800 ${pctFont}px Arial`;
     ctx.fillText(`${Math.round(score)}%`, cx, H * 0.50);
 
-    // readiness pill
     const lbl = String(label ?? scoreToLabel(score)).trim();
     const pillW = Math.min(250, W * 0.56);
     const pillH = 40;
@@ -384,25 +450,25 @@
   }
 
   function extractStyles(html){
-  return (String(html || "").match(/<style[^>]*>[\s\S]*?<\/style>/ig) || []).join("\n");
-}
+    return (String(html || "").match(/<style[^>]*>[\s\S]*?<\/style>/ig) || []).join("\n");
+  }
 
-function stripStyles(html){
-  return String(html || "").replace(/<style[^>]*>[\s\S]*?<\/style>/ig, "");
-}
+  function stripStyles(html){
+    return String(html || "").replace(/<style[^>]*>[\s\S]*?<\/style>/ig, "");
+  }
 
-function extractPlan(html){
-  const styles = extractStyles(html);
-  const body = extractBodyInner(stripStyles(html));
-  return { styles, body };
-}
+  function extractPlan(html){
+    const styles = extractStyles(html);
+    const body = extractBodyInner(stripStyles(html));
+    return { styles, body };
+  }
 
-  
   function init(){
     const token = getParam("t");
     const errEl = document.getElementById("err");
     const planMount = document.getElementById("planMount");
-      
+    const pdfBtn = document.getElementById("btnDownloadPdf");
+
     if (!token){
       errEl.textContent = "Missing parameter: ?t=";
       return;
@@ -444,54 +510,50 @@ function extractPlan(html){
         setBar("barGui","valGui", sec.guide);
         setBar("barEmp","valEmp", sec.empower);
 
-// ✅ action plan (maintenance-aware)
-if (MAINTENANCE) {
-  errEl.textContent = "";
-  planMount.innerHTML = `
-    <div style="
-      font-family: Arial;
-      padding: 24px;
-      border: 1px solid #e7eef6;
-      border-radius: 12px;
-      background: #f9fbff;
-      color: #0a2a5a;
-      text-align: center;
-    ">
-      <h2 style="margin:0 0 10px;color:#0a4aa6;">
-        🚧 Full Report Under Maintenance
-      </h2>
-      <p style="margin:0 0 6px;">
-        We’re currently finalising your full report and action plan.
-      </p>
-      <p style="margin:0;color:#555;font-size:13px;">
-        Please check back soon — you’ll be notified once it’s ready.
-      </p>
-    </div>
-  `;
-} else {
-  // 🚀 normal mode
-  if (resp.planHtml) {
-    const { body } = extractPlan(resp.planHtml);
+        if (MAINTENANCE) {
+          errEl.textContent = "";
+          planMount.innerHTML = `
+            <div style="
+              font-family: Arial;
+              padding: 24px;
+              border: 1px solid #e7eef6;
+              border-radius: 12px;
+              background: #f9fbff;
+              color: #0a2a5a;
+              text-align: center;
+            ">
+              <h2 style="margin:0 0 10px;color:#0a4aa6;">
+                🚧 Full Report Under Maintenance
+              </h2>
+              <p style="margin:0 0 6px;">
+                We’re currently finalising your full report and action plan.
+              </p>
+              <p style="margin:0;color:#555;font-size:13px;">
+                Please check back soon — you’ll be notified once it’s ready.
+              </p>
+            </div>
+          `;
+          pdfBtn.disabled = true;
+        } else {
+          if (resp.planHtml) {
+            const { body } = extractPlan(resp.planHtml);
 
-// ✅ CSS dari Sheet L1 (resp.planCss)
-const cssFromSheet = String(resp.planCss || "");
-document.getElementById("planStyles").textContent =
-  cssFromSheet.replace(/<\/?style[^>]*>/gi, "");
+            const cssFromSheet = String(resp.planCss || "");
+            document.getElementById("planStyles").textContent =
+              cssFromSheet.replace(/<\/?style[^>]*>/gi, "");
 
-// 1) ambil body (hasil extract)
-let html = String(body || "");
+            let html = String(body || "");
 
-// 2) ✅ replace placeholder dari Sheet
-html = html.replaceAll("{{logoUrl}}", String(resp.logoUrl || LOGO_URL || ""));
-html = html.replaceAll("{{planTitle}}", String(resp.planTitle || "B/RIDGE™ Workforce Action Plan"));
+            html = html.replaceAll("{{logoUrl}}", String(resp.logoUrl || LOGO_URL || ""));
+            html = html.replaceAll("{{planTitle}}", String(resp.planTitle || "B/RIDGE™ Workforce Action Plan"));
 
-// 3) inject hasil final
-planMount.innerHTML = `<div class="planInner">${html}</div>`;
- 
-} else {
-  planMount.innerHTML = "<div>Missing planHtml.</div>";
-}
-}       
+            planMount.innerHTML = `<div class="planInner pdf-avoid-break">${html}</div>`;
+            pdfBtn.disabled = false;
+          } else {
+            planMount.innerHTML = "<div class='planInner'>Missing planHtml.</div>";
+            pdfBtn.disabled = true;
+          }
+        }
 
       } finally {
         try { delete window[cbName]; } catch(e){}
@@ -499,7 +561,6 @@ planMount.innerHTML = `<div class="planInner">${html}</div>`;
     };
 
     const s = document.createElement("script");
-    // ✅ pakai byToken karena itu yang balikin planHtml
     s.src = `${WEBAPP_URL}?mode=byToken&t=${encodeURIComponent(token)}&callback=${encodeURIComponent(cbName)}&ts=${Date.now()}`;
     s.onerror = () => { errEl.textContent = "Failed to load data (API error / permissions)."; };
     document.head.appendChild(s);
@@ -507,6 +568,11 @@ planMount.innerHTML = `<div class="planInner">${html}</div>`;
 
   window.addEventListener("resize", () => {
     if (currentScore !== null) drawGauge(currentScore, currentLabel);
+  });
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const btn = document.getElementById("btnDownloadPdf");
+    if (btn) btn.addEventListener("click", downloadActionPlanPdf);
   });
 
   init();
