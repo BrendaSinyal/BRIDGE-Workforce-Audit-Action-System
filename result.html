@@ -135,9 +135,6 @@
   </div>
 
   <script>
-    /***********************
-     * CONFIG
-     ***********************/
     const LOGO_URL = "./assets/bridge-logo.png";
     const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxawEyd4imKhL--Y995FMk8KYZGH1oo7G6ylqr0XRJWrpQlpSN3-aOBjQv-Cy1HCkdk/exec";
     const MAINTENANCE = false;
@@ -198,9 +195,6 @@
       return { x: cx + Math.cos(ang) * r, y: cy + Math.sin(ang) * r };
     }
 
-    /***********************
-     * DRAW GAUGE
-     ***********************/
     function drawGauge(score, label) {
       const canvas = document.getElementById("gauge");
       resizeCanvas(canvas);
@@ -320,7 +314,7 @@
       ctx.fill();
 
       ctx.beginPath();
-      ctx.arc(cx, cy, 13, 0, Math.PI * 2);
+      ctx.arc(cx, cy, 11, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.textAlign = "center";
@@ -331,10 +325,12 @@
 
       const lbl = String(label ?? scoreToLabel(score)).trim();
 
-      const pillW = Math.min(250, W * 0.56);
-      const pillH = 40;
+      const pillW = Math.min(240, W * 0.54);
+      const pillH = 34;
       const pillX = cx - pillW / 2;
-      const pillY = H * 0.63;
+
+      /* moved lower, but still above the hub */
+      const pillY = cy - pillH - 14;
 
       const pillBg =
         lbl === "High" ? "#e8f7ef" :
@@ -349,18 +345,17 @@
         "#a10f0f";
 
       ctx.fillStyle = pillBg;
-      roundedRect(ctx, pillX, pillY, pillW, pillH, 20);
+      roundedRect(ctx, pillX, pillY, pillW, pillH, 18);
       ctx.fill();
 
-      const lblFont = Math.max(13, Math.min(17, W * 0.03));
+      const lblFont = Math.max(12, Math.min(16, W * 0.028));
       ctx.fillStyle = pillText;
       ctx.font = `800 ${lblFont}px Arial`;
-      ctx.fillText(`${lbl} Readiness`, cx, pillY + (pillH * 0.68));
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(`${lbl} Readiness`, cx, pillY + pillH / 2);
     }
 
-    /***********************
-     * BARS
-     ***********************/
     function classByScore(score) {
       const s = Number(score);
       if (isNaN(s)) return "c-mod";
@@ -378,9 +373,6 @@
       document.getElementById(valId).textContent = (isNaN(s) ? "—%" : Math.round(s) + "%");
     }
 
-    /***********************
-     * PLAN HELPERS
-     ***********************/
     function extractBodyInner(html) {
       const m = String(html || "").match(/<body[^>]*>([\s\S]*)<\/body>/i);
       return m ? m[1] : String(html || "");
@@ -400,57 +392,6 @@
       return { styles, body };
     }
 
-    function clipPlanAtMarker(container, markerText = "Plan Introduction") {
-      const normalize = (s) =>
-        String(s || "").replace(/\s+/g, " ").trim().toLowerCase();
-
-      const marker = normalize(markerText);
-
-      const candidates = Array.from(container.querySelectorAll("*"))
-        .map(el => {
-          const txt = normalize(el.textContent);
-          const rect = el.getBoundingClientRect();
-          return { el, txt, rect };
-        })
-        .filter(x => x.txt && (x.txt === marker || x.txt.includes(marker)));
-
-      if (!candidates.length) {
-        console.log("marker not found:", markerText);
-        return false;
-      }
-
-      candidates.sort((a, b) => {
-        const aExact = a.txt === marker ? 0 : 1;
-        const bExact = b.txt === marker ? 0 : 1;
-        if (aExact !== bExact) return aExact - bExact;
-        if (a.txt.length !== b.txt.length) return a.txt.length - b.txt.length;
-        return a.rect.width - b.rect.width;
-      });
-
-      const target = candidates[0].el;
-      const containerRect = container.getBoundingClientRect();
-      const targetRect = target.getBoundingClientRect();
-      const cutoffRight = Math.ceil(targetRect.right - containerRect.left + 4);
-
-      container.style.display = "block";
-      container.style.maxWidth = `${cutoffRight}px`;
-      container.style.overflow = "hidden";
-
-      Array.from(container.querySelectorAll("*")).forEach(el => {
-        const r = el.getBoundingClientRect();
-        if (r.left >= targetRect.right - 2) {
-          el.style.display = "none";
-        }
-      });
-
-      console.log("marker picked:", normalize(target.textContent));
-      console.log("cutoffRight:", cutoffRight);
-      return true;
-    }
-
-    /***********************
-     * JSONP LOAD
-     ***********************/
     function init() {
       const token = getParam("t");
       const errEl = document.getElementById("err");
@@ -535,10 +476,7 @@
                 String(resp.planTitle || "B/RIDGE™ Workforce Action Plan")
               );
 
-              planMount.innerHTML = `<div class="planInner" id="planInnerMount">${html}</div>`;
-
-              const renderedPlan = document.getElementById("planInnerMount");
-              clipPlanAtMarker(renderedPlan, "Plan Introduction");
+              planMount.innerHTML = `<div class="planInner">${html}</div>`;
             } else {
               planMount.innerHTML = `<div class="planInner" style="color:#b00020;font-weight:700;">Missing planHtml.</div>`;
             }
