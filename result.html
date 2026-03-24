@@ -17,7 +17,8 @@
     .left { flex: 1 1 520px; }
     .right { flex: 0 0 300px; }
 
-    #gauge { width: 100%; height: 200px; display:block; }
+    /* dinaikkan supaya label readiness punya ruang di bawah */
+    #gauge { width: 100%; height: 240px; display:block; }
 
     .legend { font-size: 14px; }
     .legItem { display:flex; align-items:center; gap:10px; margin: 8px 0; }
@@ -204,14 +205,16 @@
       const H = canvas.clientHeight;
       ctx.clearRect(0, 0, W, H);
 
+      // pusat gauge dinaikkan sedikit supaya ada ruang di bawah
       const cx = W / 2;
-      const cy = H * 0.92;
+      const cy = H * 0.80;
 
-      const rOuter = Math.min(W * 0.36, H * 0.92);
+      const rOuter = Math.min(W * 0.36, H * 0.58);
       const thickness = Math.min(38, rOuter * 0.35);
       const rMid = rOuter - thickness / 2;
       const rInner = Math.max(20, rOuter - thickness - 16);
 
+      // background arc
       ctx.lineCap = "butt";
       ctx.lineWidth = thickness;
       ctx.strokeStyle = "#e9ecef";
@@ -243,6 +246,7 @@
         currentAngle = a2;
       });
 
+      // separators
       const boundaries = [
         Math.PI + 0.40 * Math.PI,
         Math.PI + 0.60 * Math.PI,
@@ -262,6 +266,7 @@
       });
       ctx.restore();
 
+      // inner face
       ctx.fillStyle = "#fff";
       ctx.beginPath();
       ctx.arc(cx, cy, rInner, Math.PI, Math.PI * 2, false);
@@ -269,6 +274,7 @@
       ctx.closePath();
       ctx.fill();
 
+      // ring labels
       ctx.save();
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -290,16 +296,18 @@
       });
       ctx.restore();
 
+      // outline
       ctx.strokeStyle = "#cfd4da";
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(cx, cy, rOuter + 1, Math.PI, Math.PI * 2, false);
       ctx.stroke();
 
+      // needle
       const ang = scoreToAngle(score);
       const needleLen = rInner * 0.98;
       const tip = polar(cx, cy, needleLen, ang);
-      const back = polar(cx, cy, 18, ang + Math.PI);
+      const back = polar(cx, cy, 16, ang + Math.PI);
       const perp = ang + Math.PI / 2;
       const left = polar(cx, cy, 7, perp);
       const right = polar(cx, cy, 7, perp + Math.PI);
@@ -313,24 +321,26 @@
       ctx.closePath();
       ctx.fill();
 
+      // hub
       ctx.beginPath();
-      ctx.arc(cx, cy, 11, 0, Math.PI * 2);
+      ctx.arc(cx, cy, 10, 0, Math.PI * 2);
       ctx.fill();
 
+      // percentage
       ctx.textAlign = "center";
+      ctx.textBaseline = "alphabetic";
       ctx.fillStyle = "#0a2a5a";
       const pctFont = Math.max(34, Math.min(50, W * 0.085));
       ctx.font = `800 ${pctFont}px Arial`;
-      ctx.fillText(`${Math.round(score)}%`, cx, H * 0.50);
+      ctx.fillText(`${Math.round(score)}%`, cx, H * 0.47);
 
+      // readiness pill dipindah di bawah hub
       const lbl = String(label ?? scoreToLabel(score)).trim();
 
       const pillW = Math.min(240, W * 0.54);
-      const pillH = 34;
+      const pillH = 32;
       const pillX = cx - pillW / 2;
-
-      /* moved lower, but still above the hub */
-      const pillY = cy - pillH - 14;
+      const pillY = cy + 14;
 
       const pillBg =
         lbl === "High" ? "#e8f7ef" :
