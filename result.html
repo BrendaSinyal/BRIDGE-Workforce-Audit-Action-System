@@ -32,16 +32,8 @@
     .section { display:flex; align-items:center; gap:12px; padding: 10px 0; border-top: 1px solid #edf2fb; }
     .section:first-of-type { border-top: 0; }
     .secName { width: 340px; font-size: 15px; color:#0a2a5a; }
-    .secKey {
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-    }
-    .secDesc {
-      font-weight: 500;
-      text-transform: none;
-      letter-spacing: 0;
-    }
+    .secKey { font-weight: 900; text-transform: uppercase; letter-spacing: 0.4px; }
+    .secDesc { font-weight: 500; text-transform: none; letter-spacing: 0; }
 
     .barWrap { flex: 1; height: 14px; background:#f0f5ff; border-radius: 999px; overflow:hidden; }
     .bar { height: 100%; width: 0%; border-radius: 999px; }
@@ -212,7 +204,6 @@
       const rMid = rOuter - thickness / 2;
       const rInner = Math.max(20, rOuter - thickness - 16);
 
-      // background arc
       ctx.lineCap = "butt";
       ctx.lineWidth = thickness;
       ctx.strokeStyle = "#e9ecef";
@@ -244,7 +235,6 @@
         currentAngle = a2;
       });
 
-      // separators
       const boundaries = [
         Math.PI + 0.40 * Math.PI,
         Math.PI + 0.60 * Math.PI,
@@ -264,7 +254,6 @@
       });
       ctx.restore();
 
-      // inner face
       ctx.fillStyle = "#fff";
       ctx.beginPath();
       ctx.arc(cx, cy, rInner, Math.PI, Math.PI * 2, false);
@@ -272,7 +261,6 @@
       ctx.closePath();
       ctx.fill();
 
-      // ring labels
       ctx.save();
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -294,14 +282,12 @@
       });
       ctx.restore();
 
-      // outline
       ctx.strokeStyle = "#cfd4da";
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(cx, cy, rOuter + 1, Math.PI, Math.PI * 2, false);
       ctx.stroke();
 
-      // needle
       const ang = scoreToAngle(score);
       const needleLen = rInner * 0.98;
       const tip = polar(cx, cy, needleLen, ang);
@@ -319,12 +305,10 @@
       ctx.closePath();
       ctx.fill();
 
-      // hub
       ctx.beginPath();
       ctx.arc(cx, cy, 10, 0, Math.PI * 2);
       ctx.fill();
 
-      // percentage - diturunkan supaya tidak kena gauge bar
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillStyle = "#0a2a5a";
@@ -332,7 +316,6 @@
       ctx.font = `800 ${pctFont}px Arial`;
       ctx.fillText(`${Math.round(score)}%`, cx, cy - rInner * 0.28);
 
-      // readiness pill di bawah hub
       const lbl = String(label ?? scoreToLabel(score)).trim();
 
       const pillW = Math.min(240, W * 0.54);
@@ -429,7 +412,7 @@
 
           const score = clamp(scoreNum, 0, 100);
           const labelRaw = resp.readiness ?? resp.label;
-          const label = String(labelRaw ?? const label = String(labelRaw ?? scoreToLabel(score)).trim();
+          const label = String(labelRaw ?? scoreToLabel(score)).trim();
 
           currentScore = score;
           currentLabel = label;
@@ -470,7 +453,7 @@
               const { styles, body } = extractPlan(resp.planHtml);
 
               const cssFromSheet = String(resp.planCss || "").replace(/<\/?style[^>]*>/gi, "");
-              const cssFromHtml = String(styles || "").replace(/<\/?style[^ "").replace(/<\/?style[^>]*>/gi, "");
+              const cssFromHtml = String(styles || "").replace(/<\/?style[^>]*>/gi, "");
 
               document.getElementById("planStyles").textContent = `${cssFromHtml}\n${cssFromSheet}`;
 
@@ -504,7 +487,7 @@
     }
 
     window.addEventListener("resize", () => {
-      if (currentScore !== null) drawGaugecurrentScore !== null) drawGauge(currentScore, currentLabel);
+      if (currentScore !== null) drawGauge(currentScore, currentLabel);
     });
 
     init();
