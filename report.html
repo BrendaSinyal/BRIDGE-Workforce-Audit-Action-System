@@ -22,7 +22,6 @@
       print-color-adjust: exact;
     }
 
-    /* preview lebar A4 */
     .wrap {
       width: min(210mm, calc(100vw - 36px));
       max-width: 210mm;
@@ -62,9 +61,10 @@
     .left { flex: 1 1 520px; }
     .right { flex: 0 0 300px; }
 
+    /* gauge sama seperti versi result terbaru */
     #gauge {
       width: 100%;
-      height: 200px;
+      height: 240px;
       display: block;
     }
 
@@ -175,7 +175,6 @@
       font-weight: 700;
     }
 
-    /* logo/header di layar */
     .pageHeader {
       display: flex;
       justify-content: flex-end;
@@ -190,7 +189,6 @@
       object-fit: contain;
     }
 
-    /* action plan container */
     .planWrap { margin-top: 16px; }
 
     .planCard {
@@ -206,14 +204,6 @@
       background: #fff;
     }
 
-    .planHeader .title {
-      font-weight: 900;
-      color: #0a4aa6;
-      font-size: 20px;
-      line-height: 1.2;
-    }
-
-    /* tombol pdf */
     .pdfActions {
       margin-top: 16px;
       display: flex;
@@ -236,7 +226,6 @@
       cursor: not-allowed;
     }
 
-    /* bantu cegah kepotong */
     .pdf-avoid-break,
     .planInner li,
     .planInner img,
@@ -297,12 +286,10 @@
 <body>
   <div class="wrap">
 
-    <!-- LOGO ON SCREEN -->
     <div class="pageHeader">
       <img id="reportLogo" alt="B/RIDGE logo" />
     </div>
 
-    <!-- TOP -->
     <div class="card">
       <h1>B/RIDGE™ Workforce Readiness Assessment</h1>
       <div class="topline"></div>
@@ -369,21 +356,18 @@
       <div class="err" id="err"></div>
     </div>
 
-    <!-- ACTION PLAN -->
     <div class="planWrap">
       <div class="planCard" id="planCard">
         <div id="planMount"></div>
       </div>
     </div>
 
-    <!-- PDF BUTTON -->
     <div class="pdfActions">
       <button id="btnDownloadPdf" type="button" disabled>Download Action Plan PDF</button>
     </div>
 
   </div>
 
-  <!-- html2pdf -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <script>
@@ -500,19 +484,19 @@
       });
     }
 
-    function drawGauge(score, label) {
+    function drawGauge(score, label){
       const canvas = document.getElementById("gauge");
       resizeCanvas(canvas);
       const ctx = canvas.getContext("2d");
 
       const W = canvas.clientWidth;
       const H = canvas.clientHeight;
-      ctx.clearRect(0, 0, W, H);
+      ctx.clearRect(0,0,W,H);
 
       const cx = W / 2;
-      const cy = H * 0.92;
+      const cy = H * 0.78;
 
-      const rOuter = Math.min(W * 0.36, H * 0.92);
+      const rOuter = Math.min(W * 0.36, H * 0.78);
       const thickness = Math.min(38, rOuter * 0.35);
       const rMid = rOuter - thickness / 2;
       const rInner = Math.max(20, rOuter - thickness - 16);
@@ -528,7 +512,7 @@
         { label: "Critical", size: 40, color: "#e74c3c" },
         { label: "Low", size: 20, color: "#f39c12" },
         { label: "Moderate", size: 20, color: "#f1c40f" },
-        { label: "High", size: 20, color: "#2ecc71" }
+        { label: "High", size: 20, color: "#2ecc71" },
       ];
 
       let currentAngle = Math.PI;
@@ -578,7 +562,6 @@
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillStyle = "#fff";
-
       const ringFont = Math.max(7, Math.min(9, W * 0.018));
       ctx.font = `800 ${ringFont}px Arial`;
 
@@ -587,7 +570,7 @@
         { text: "Critical", angle: Math.PI + (0.20 * Math.PI) },
         { text: "Low", angle: Math.PI + (0.50 * Math.PI) },
         { text: "Moderate", angle: Math.PI + (0.70 * Math.PI) },
-        { text: "High", angle: Math.PI + (0.90 * Math.PI) }
+        { text: "High", angle: Math.PI + (0.90 * Math.PI) },
       ];
 
       labelAngles.forEach(l => {
@@ -607,7 +590,7 @@
 
       const tip = polar(cx, cy, needleLen, ang);
       const back = polar(cx, cy, 18, ang + Math.PI);
-      const perp = ang + Math.PI / 2;
+      const perp = ang + Math.PI/2;
       const left = polar(cx, cy, 7, perp);
       const right = polar(cx, cy, 7, perp + Math.PI);
 
@@ -621,20 +604,23 @@
       ctx.fill();
 
       ctx.beginPath();
-      ctx.arc(cx, cy, 13, 0, Math.PI * 2);
+      ctx.arc(cx, cy, 11, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
       ctx.fillStyle = "#0a2a5a";
-      const pctFont = Math.max(34, Math.min(50, W * 0.085));
+      const pctFont = score >= 100
+        ? Math.max(30, Math.min(42, W * 0.075))
+        : Math.max(34, Math.min(50, W * 0.085));
       ctx.font = `800 ${pctFont}px Arial`;
-      ctx.fillText(`${Math.round(score)}%`, cx, H * 0.50);
+      ctx.fillText(`${Math.round(score)}%`, cx, H * 0.48);
 
       const lbl = String(label ?? scoreToLabel(score)).trim();
-      const pillW = Math.min(250, W * 0.56);
-      const pillH = 40;
+      const pillW = Math.min(240, W * 0.54);
+      const pillH = 32;
       const pillX = cx - pillW / 2;
-      const pillY = H * 0.63;
+      const pillY = H - pillH - 6;
 
       const pillBg =
         lbl === "High" ? "#e8f7ef" :
@@ -649,13 +635,15 @@
         "#a10f0f";
 
       ctx.fillStyle = pillBg;
-      roundedRect(ctx, pillX, pillY, pillW, pillH, 20);
+      roundedRect(ctx, pillX, pillY, pillW, pillH, 18);
       ctx.fill();
 
-      const lblFont = Math.max(13, Math.min(17, W * 0.03));
+      const lblFont = Math.max(12, Math.min(16, W * 0.028));
       ctx.fillStyle = pillText;
       ctx.font = `800 ${lblFont}px Arial`;
-      ctx.fillText(`${lbl} Readiness`, cx, pillY + (pillH * 0.68));
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(`${lbl} Readiness`, cx, pillY + pillH / 2);
     }
 
     async function downloadActionPlanPdf() {
@@ -811,6 +799,10 @@
           setBar("barGui", "valGui", sec.guide);
           setBar("barEmp", "valEmp", sec.empower);
 
+          const finalLogoUrl = String(resp.logoUrl || LOGO_URL || "");
+          const logoEl = document.getElementById("reportLogo");
+          if (logoEl) logoEl.src = finalLogoUrl;
+
           if (MAINTENANCE) {
             errEl.textContent = "";
             planMount.innerHTML = `
@@ -840,16 +832,11 @@
                 cssFromSheet.replace(/<\/?style[^>]*>/gi, "");
 
               let html = String(body || "");
-              const finalLogoUrl = String(resp.logoUrl || LOGO_URL || "");
-
               html = html.replaceAll("{{logoUrl}}", finalLogoUrl);
               html = html.replaceAll("{{planTitle}}", String(resp.planTitle || "B/RIDGE™ Workforce Action Plan"));
 
-              document.getElementById("reportLogo").src = finalLogoUrl;
-
               planMount.innerHTML = `<div class="planInner">${html}</div>`;
               enhancePlanForPdf(planMount);
-
               pdfBtn.disabled = false;
             } else {
               planMount.innerHTML = `<div class="planInner">Missing planHtml.</div>`;
@@ -863,7 +850,7 @@
       };
 
       const s = document.createElement("script");
-      s.src = `${WEBAPP_URL}?mode=byToken&t=${encodeURIComponent(token)}&callback=${encodeURIComponent(cbName)}&ts=${Date.now()}`;
+      s.src = `${WEBAPP_URL}?mode=reportByToken&t=${encodeURIComponent(token)}&callback=${encodeURIComponent(cbName)}&ts=${Date.now()}`;
       s.onerror = () => {
         errEl.textContent = "Failed to load data (API error / permissions).";
       };
