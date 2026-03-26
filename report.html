@@ -58,8 +58,8 @@
       flex-wrap: wrap;
     }
 
-    .left { flex: 1 1 520px; }
-    .right { flex: 0 0 300px; }
+    .left { flex: 1 1 auto; min-width: 0; }
+    .right { flex: 0 0 280px; }
 
     /* gauge sama seperti versi result terbaru */
     #gauge {
@@ -267,6 +267,9 @@
     }
 
     @media (max-width: 900px) {
+      .row { flex-wrap: wrap; }
+      .right { flex: 1 1 100%; }
+
       .wrap {
         width: auto;
         max-width: none;
