@@ -18,7 +18,7 @@
     .right { flex: 0 0 300px; }
 
     /* sedikit lebih tinggi supaya label readiness bisa di bawah needle */
-    #gauge { width: 100%; height: 240px; display:block; }
+    #gauge { width: 100%; height: 320px; display:block; }
 
     .legend { font-size: 14px; }
     .legItem { display:flex; align-items:center; gap:10px; margin: 8px 0; }
@@ -118,13 +118,6 @@
         <div class="barWrap"><div class="bar" id="barEmp"></div></div>
         <div class="secVal" id="valEmp">—%</div>
       </div>
-
-      <div class="overall">
-        Overall Readiness Score:
-        <span class="big" id="overallScore">—%</span>
-        <span class="label" id="overallLabel"></span>
-      </div>
-
       <div class="err" id="err"></div>
     </div>
 
@@ -196,177 +189,133 @@
       return { x: cx + Math.cos(ang) * r, y: cy + Math.sin(ang) * r };
     }
 
-    function drawGauge(score, label){
-      const canvas = document.getElementById("gauge");
-      resizeCanvas(canvas);
-      const ctx = canvas.getContext("2d");
+function drawGauge(score, label) {
+  const canvas = document.getElementById("gauge");
+  resizeCanvas(canvas);
+  const ctx = canvas.getContext("2d");
 
-      const W = canvas.clientWidth;
-      const H = canvas.clientHeight;
-      ctx.clearRect(0,0,W,H);
+  const W = canvas.clientWidth;
+  const H = canvas.clientHeight;
+  ctx.clearRect(0, 0, W, H);
 
-      // tetap mirip bentuk semula, tapi pusat sedikit dinaikkan supaya ada ruang bawah
-      const cx = W / 2;
-      const cy = H * 0.78;
+  const cx = W / 2;
+  const cy = H * 0.68; // pusat gauge agak ke bawah agar arch besar dan bawahnya rapat
 
-      const rOuter = Math.min(W * 0.36, H * 0.78);
-      const thickness = Math.min(38, rOuter * 0.35);
-      const rMid = rOuter - thickness / 2;
-      const rInner = Math.max(20, rOuter - thickness - 16);
+  const rOuter = Math.min(W * 0.44, H * 0.62);
+  const thickness = Math.min(70, rOuter * 0.42);
+  const rInner = rOuter - thickness;
+  const rMid = (rOuter + rInner) / 2;
 
-      // background arc
-      ctx.lineCap = "butt";
-      ctx.lineWidth = thickness;
-      ctx.strokeStyle = "#e9ecef";
-      ctx.beginPath();
-      ctx.arc(cx, cy, rMid, Math.PI, 0, false);
-      ctx.stroke();
+  // segment gauge
+  const segSizes = [
+    { label: "Critical", size: 40, color: "#c93b2b" },
+    { label: "Low", size: 20, color: "#e67e22" },
+    { label: "Moderate", size: 20, color: "#f2c94c" },
+    { label: "High", size: 20, color: "#29b765" },
+  ];
 
-      const segSizes = [
-        { label: "Critical", size: 40, color: "#e74c3c" },
-        { label: "Low", size: 20, color: "#f39c12" },
-        { label: "Moderate", size: 20, color: "#f1c40f" },
-        { label: "High", size: 20, color: "#2ecc71" },
-      ];
+  let currentAngle = Math.PI;
 
-      let currentAngle = Math.PI;
+  segSizes.forEach(seg => {
+    const span = (seg.size / 100) * Math.PI;
+    const a1 = currentAngle;
+    const a2 = currentAngle + span;
 
-      segSizes.forEach(seg => {
-        const span = (seg.size / 100) * Math.PI;
-        const a1 = currentAngle;
-        const a2 = currentAngle + span;
+    ctx.beginPath();
+    ctx.arc(cx, cy, rOuter, a1, a2, false);
+    ctx.arc(cx, cy, rInner, a2, a1, true);
+    ctx.closePath();
+    ctx.fillStyle = seg.color;
+    ctx.fill();
 
-        ctx.fillStyle = seg.color;
-        ctx.beginPath();
-        ctx.arc(cx, cy, rOuter, a1, a2, false);
-        ctx.arc(cx, cy, rInner, a2, a1, true);
-        ctx.closePath();
-        ctx.fill();
+    currentAngle = a2;
+  });
 
-        currentAngle = a2;
-      });
+  // garis pemisah antar segmen
+  const boundaries = [
+    Math.PI + 0.40 * Math.PI,
+    Math.PI + 0.60 * Math.PI,
+    Math.PI + 0.80 * Math.PI
+  ];
 
-      const boundaries = [
-        Math.PI + 0.40 * Math.PI,
-        Math.PI + 0.60 * Math.PI,
-        Math.PI + 0.80 * Math.PI
-      ];
+  ctx.save();
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 3;
+  boundaries.forEach(a => {
+    const p1 = polar(cx, cy, rOuter, a);
+    const p2 = polar(cx, cy, rInner, a);
+    ctx.beginPath();
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.stroke();
+  });
+  ctx.restore();
 
-      ctx.save();
-      ctx.strokeStyle = "#f3f4f6";
-      ctx.lineWidth = 4;
-      boundaries.forEach(a => {
-        const p1 = polar(cx, cy, rOuter, a);
-        const p2 = polar(cx, cy, rInner, a);
-        ctx.beginPath();
-        ctx.moveTo(p1.x, p1.y);
-        ctx.lineTo(p2.x, p2.y);
-        ctx.stroke();
-      });
-      ctx.restore();
+  // label di atas arch
+  ctx.save();
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = `800 ${Math.max(14, Math.min(18, W * 0.03))}px Arial`;
 
-      // inner face
-      ctx.fillStyle = "#fff";
-      ctx.beginPath();
-      ctx.arc(cx, cy, rInner, Math.PI, Math.PI * 2, false);
-      ctx.lineTo(cx, cy);
-      ctx.closePath();
-      ctx.fill();
+  const ringTextR = rMid;
+  const labelAngles = [
+    { text: "CRITICAL", angle: Math.PI + 0.20 * Math.PI, color: "#ffffff" },
+    { text: "LOW", angle: Math.PI + 0.50 * Math.PI, color: "#ffffff" },
+    { text: "MODERATE", angle: Math.PI + 0.70 * Math.PI, color: "#24476b" },
+    { text: "HIGH", angle: Math.PI + 0.90 * Math.PI, color: "#ffffff" },
+  ];
 
-      // ring labels
-      ctx.save();
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillStyle = "#fff";
-      const ringFont = Math.max(7, Math.min(9, W * 0.018));
-      ctx.font = `800 ${ringFont}px Arial`;
+  labelAngles.forEach(item => {
+    const p = polar(cx, cy, ringTextR, item.angle);
+    ctx.fillStyle = item.color;
+    ctx.fillText(item.text, p.x, p.y);
+  });
+  ctx.restore();
 
-      const ringTextR = rMid - 2;
-      const labelAngles = [
-        { text: "Critical", angle: Math.PI + (0.20 * Math.PI) },
-        { text: "Low", angle: Math.PI + (0.50 * Math.PI) },
-        { text: "Moderate", angle: Math.PI + (0.70 * Math.PI) },
-        { text: "High", angle: Math.PI + (0.90 * Math.PI) },
-      ];
+  // needle
+  const ang = scoreToAngle(score);
+  const needleLen = rInner + thickness * 0.45;
 
-      labelAngles.forEach(l => {
-        const p = polar(cx, cy, ringTextR, l.angle);
-        ctx.fillText(l.text, p.x, p.y);
-      });
-      ctx.restore();
+  const tip = polar(cx, cy, needleLen, ang);
+  const back = polar(cx, cy, 15, ang + Math.PI);
+  const perp = ang + Math.PI / 2;
+  const left = polar(cx, cy, 8, perp);
+  const right = polar(cx, cy, 8, perp + Math.PI);
 
-      // outline
-      ctx.strokeStyle = "#cfd4da";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(cx, cy, rOuter + 1, Math.PI, Math.PI * 2, false);
-      ctx.stroke();
+  ctx.fillStyle = "#243b55";
+  ctx.beginPath();
+  ctx.moveTo(tip.x, tip.y);
+  ctx.lineTo(left.x, left.y);
+  ctx.lineTo(back.x, back.y);
+  ctx.lineTo(right.x, right.y);
+  ctx.closePath();
+  ctx.fill();
 
-      // needle
-      const ang = scoreToAngle(score);
-      const needleLen = rInner * 0.98;
+  // hub
+  ctx.beginPath();
+  ctx.arc(cx, cy, 10, 0, Math.PI * 2);
+  ctx.fillStyle = "#243b55";
+  ctx.fill();
 
-      const tip = polar(cx, cy, needleLen, ang);
-      const back = polar(cx, cy, 18, ang + Math.PI);
-      const perp = ang + Math.PI/2;
-      const left = polar(cx, cy, 7, perp);
-      const right = polar(cx, cy, 7, perp + Math.PI);
+  // angka persen DI BAWAH ARCH
+  const pctY = cy + 78;
+  ctx.fillStyle = "#3c5374";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = `800 ${Math.max(46, Math.min(62, W * 0.10))}px Arial`;
+  ctx.fillText(`${Math.round(score)}%`, cx, pctY);
 
-      ctx.fillStyle = "#2c3e50";
-      ctx.beginPath();
-      ctx.moveTo(tip.x, tip.y);
-      ctx.lineTo(left.x, left.y);
-      ctx.lineTo(back.x, back.y);
-      ctx.lineTo(right.x, right.y);
-      ctx.closePath();
-      ctx.fill();
+  // label readiness di bawah persen
+  const finalLabel = String(label ?? scoreToLabel(score)).trim();
+  let labelColor = "#c49a00";
+  if (finalLabel === "High") labelColor = "#1f8f52";
+  else if (finalLabel === "Low") labelColor = "#d97706";
+  else if (finalLabel === "Critical") labelColor = "#b42318";
 
-      // hub
-      ctx.beginPath();
-      ctx.arc(cx, cy, 11, 0, Math.PI * 2);
-      ctx.fill();
-
-      // percent: diturunkan sedikit
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillStyle = "#0a2a5a";
-      const pctFont = score >= 100
-        ? Math.max(30, Math.min(42, W * 0.075))
-        : Math.max(34, Math.min(50, W * 0.085));
-      ctx.font = `800 ${pctFont}px Arial`;
-      ctx.fillText(`${Math.round(score)}%`, cx, H * 0.48);
-
-      // readiness pill: benar-benar di bawah needle/hub
-      const lbl = String(label ?? scoreToLabel(score)).trim();
-
-      const pillW = Math.min(240, W * 0.54);
-      const pillH = 32;
-      const pillX = cx - pillW / 2;
-      const pillY = H - pillH - 6;
-
-      const pillBg =
-        lbl === "High" ? "#e8f7ef" :
-        lbl === "Moderate" ? "#fff4d8" :
-        lbl === "Low" ? "#f39c12" :
-        "#ffe1e1";
-
-      const pillText =
-        lbl === "High" ? "#1a7a4a" :
-        lbl === "Moderate" ? "#9a6a00" :
-        lbl === "Low" ? "#ffffff" :
-        "#a10f0f";
-
-      ctx.fillStyle = pillBg;
-      roundedRect(ctx, pillX, pillY, pillW, pillH, 18);
-      ctx.fill();
-
-      const lblFont = Math.max(12, Math.min(16, W * 0.028));
-      ctx.fillStyle = pillText;
-      ctx.font = `800 ${lblFont}px Arial`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(`${lbl} Readiness`, cx, pillY + pillH / 2);
-    }
+  ctx.fillStyle = labelColor;
+  ctx.font = `700 ${Math.max(18, Math.min(24, W * 0.042))}px Arial`;
+  ctx.fillText(`${finalLabel} Readiness`, cx, pctY + 42);
+}
 
     function classByScore(score) {
       const s = Number(score);
@@ -437,10 +386,7 @@
 
           currentScore = score;
           currentLabel = label;
-
-          document.getElementById("overallScore").textContent = `${Math.round(score)}%`;
-          document.getElementById("overallLabel").textContent = `${label} Readiness`;
-
+          
           drawGauge(score, label);
 
           const sec = resp.section ?? resp.sections ?? {};
