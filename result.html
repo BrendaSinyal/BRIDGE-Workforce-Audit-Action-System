@@ -17,7 +17,6 @@
     .left { flex: 1 1 520px; }
     .right { flex: 0 0 300px; }
 
-    /* sedikit lebih tinggi supaya label readiness bisa di bawah needle */
     #gauge { width: 100%; height: 340px; display:block; }
 
     .legend { font-size: 14px; }
@@ -114,6 +113,7 @@
         <div class="barWrap"><div class="bar" id="barEmp"></div></div>
         <div class="secVal" id="valEmp">—%</div>
       </div>
+
       <div class="err" id="err"></div>
     </div>
 
@@ -128,13 +128,6 @@
     const LOGO_URL = "./assets/bridge-logo.png";
     const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxawEyd4imKhL--Y995FMk8KYZGH1oo7G6ylqr0XRJWrpQlpSN3-aOBjQv-Cy1HCkdk/exec";
     const MAINTENANCE = false;
-
-    const LABEL_COLORS = {
-      High: "#2ecc71",
-      Moderate: "#f1c40f",
-      Low: "#f39c12",
-      Critical: "#e74c3c",
-    };
 
     let currentScore = null;
     let currentLabel = null;
@@ -161,6 +154,16 @@
       return v ? v.trim() : "";
     }
 
+    function roundedRect(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+    }
+
     function resizeCanvas(canvas) {
       const dpr = window.devicePixelRatio || 1;
       const cssW = canvas.clientWidth;
@@ -175,131 +178,159 @@
       return { x: cx + Math.cos(ang) * r, y: cy + Math.sin(ang) * r };
     }
 
-function drawGauge(score, label) {
-  const canvas = document.getElementById("gauge");
-  resizeCanvas(canvas);
-  const ctx = canvas.getContext("2d");
+    function drawGauge(score, label) {
+      const canvas = document.getElementById("gauge");
+      resizeCanvas(canvas);
+      const ctx = canvas.getContext("2d");
 
-  const W = canvas.clientWidth;
-  const H = canvas.clientHeight;
-  ctx.clearRect(0, 0, W, H);
+      const W = canvas.clientWidth;
+      const H = canvas.clientHeight;
+      ctx.clearRect(0, 0, W, H);
 
-  const cx = W / 2;
-  const cy = H * 0.62; // pusat gauge agak ke bawah agar arch besar dan bawahnya rapat
+      const cx = W / 2;
+      const cy = H * 0.70;
 
-  const rOuter = Math.min(W * 0.44, H * 0.56);
-  const thickness = Math.min(68, rOuter * 0.40);
-  const rInner = rOuter - thickness;
-  const rMid = (rOuter + rInner) / 2;
+      const rOuter = Math.min(W * 0.40, H * 0.58);
+      const thickness = Math.min(64, rOuter * 0.36);
+      const rInner = rOuter - thickness;
+      const rMid = (rOuter + rInner) / 2;
 
-  // segment gauge
-  const segSizes = [
+      const segSizes = [
         { label: "Critical", size: 40, color: "#e74c3c" },
         { label: "Low", size: 20, color: "#f39c12" },
         { label: "Moderate", size: 20, color: "#f1c40f" },
         { label: "High", size: 20, color: "#2ecc71" },
-  ];
+      ];
 
-  let currentAngle = Math.PI;
+      let currentAngle = Math.PI;
 
-  segSizes.forEach(seg => {
-    const span = (seg.size / 100) * Math.PI;
-    const a1 = currentAngle;
-    const a2 = currentAngle + span;
+      segSizes.forEach(seg => {
+        const span = (seg.size / 100) * Math.PI;
+        const a1 = currentAngle;
+        const a2 = currentAngle + span;
 
-    ctx.beginPath();
-    ctx.arc(cx, cy, rOuter, a1, a2, false);
-    ctx.arc(cx, cy, rInner, a2, a1, true);
-    ctx.closePath();
-    ctx.fillStyle = seg.color;
-    ctx.fill();
+        ctx.beginPath();
+        ctx.arc(cx, cy, rOuter, a1, a2, false);
+        ctx.arc(cx, cy, rInner, a2, a1, true);
+        ctx.closePath();
+        ctx.fillStyle = seg.color;
+        ctx.fill();
 
-    currentAngle = a2;
-  });
+        currentAngle = a2;
+      });
 
-  // garis pemisah antar segmen
-  const boundaries = [
-    Math.PI + 0.40 * Math.PI,
-    Math.PI + 0.60 * Math.PI,
-    Math.PI + 0.80 * Math.PI
-  ];
+      const boundaries = [
+        Math.PI + 0.40 * Math.PI,
+        Math.PI + 0.60 * Math.PI,
+        Math.PI + 0.80 * Math.PI
+      ];
 
-  ctx.save();
-  ctx.strokeStyle = "#f3f4f6";
-  ctx.lineWidth = 3;
-  boundaries.forEach(a => {
-    const p1 = polar(cx, cy, rOuter, a);
-    const p2 = polar(cx, cy, rInner, a);
-    ctx.beginPath();
-    ctx.moveTo(p1.x, p1.y);
-    ctx.lineTo(p2.x, p2.y);
-    ctx.stroke();
-  });
-  ctx.restore();
+      ctx.save();
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 4;
+      boundaries.forEach(a => {
+        const p1 = polar(cx, cy, rOuter, a);
+        const p2 = polar(cx, cy, rInner, a);
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.stroke();
+      });
+      ctx.restore();
 
-  // label di atas arch
-  ctx.save();
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.font = `800 ${Math.max(10, Math.min(14, W * 0.022))}px Arial`;
+      ctx.save();
+      ctx.strokeStyle = "#cfd6dc";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, rOuter, Math.PI, 2 * Math.PI, false);
+      ctx.stroke();
+      ctx.restore();
 
-  const ringTextR = rInner + (thickness * 0.42);
-const labelAngles = [
-  { text: "Critical", angle: Math.PI + (0.20 * Math.PI) },
-  { text: "Low", angle: Math.PI + (0.50 * Math.PI) },
-  { text: "Moderate", angle: Math.PI + (0.70 * Math.PI) },
-  { text: "High", angle: Math.PI + (0.90 * Math.PI) },
-];
+      ctx.save();
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `700 ${Math.max(9, Math.min(12, W * 0.020))}px Arial`;
 
-labelAngles.forEach(l => {
-  const p = polar(cx, cy, ringTextR, l.angle);
-  ctx.fillText(l.text, p.x, p.y);
-});
+      const ringTextR = rInner + (thickness * 0.52);
+      const labelAngles = [
+        { text: "Critical", angle: Math.PI + (0.20 * Math.PI) },
+        { text: "Low", angle: Math.PI + (0.50 * Math.PI) },
+        { text: "Moderate", angle: Math.PI + (0.70 * Math.PI) },
+        { text: "High", angle: Math.PI + (0.90 * Math.PI) },
+      ];
 
-  // needle
-  const ang = scoreToAngle(score);
-  const needleLen = rInner + thickness * 0.50;
+      labelAngles.forEach(l => {
+        const p = polar(cx, cy, ringTextR, l.angle);
+        ctx.fillText(l.text, p.x, p.y);
+      });
+      ctx.restore();
 
-  const tip = polar(cx, cy, needleLen, ang);
-  const back = polar(cx, cy, 15, ang + Math.PI);
-  const perp = ang + Math.PI / 2;
-  const left = polar(cx, cy, 8, perp);
-  const right = polar(cx, cy, 8, perp + Math.PI);
+      const ang = scoreToAngle(score);
+      const needleLen = rInner + thickness * 0.52;
 
-  ctx.fillStyle = "#fff";
-  ctx.beginPath();
-  ctx.moveTo(tip.x, tip.y);
-  ctx.lineTo(left.x, left.y);
-  ctx.lineTo(back.x, back.y);
-  ctx.lineTo(right.x, right.y);
-  ctx.closePath();
-  ctx.fill();
+      const tip = polar(cx, cy, needleLen, ang);
+      const back = polar(cx, cy, 18, ang + Math.PI);
+      const perp = ang + Math.PI / 2;
+      const left = polar(cx, cy, 8, perp);
+      const right = polar(cx, cy, 8, perp + Math.PI);
 
-  // hub
-  ctx.beginPath();
-  ctx.arc(cx, cy, 10, 0, Math.PI * 2);
-  ctx.fillStyle = "#243b55";
-  ctx.fill();
+      ctx.fillStyle = "#2f435c";
+      ctx.beginPath();
+      ctx.moveTo(tip.x, tip.y);
+      ctx.lineTo(left.x, left.y);
+      ctx.lineTo(back.x, back.y);
+      ctx.lineTo(right.x, right.y);
+      ctx.closePath();
+      ctx.fill();
 
-  // angka persen DI BAWAH ARCH
-  const pctY = cy + 64;
-  ctx.fillStyle = "#0a2a5a";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.font = `800 ${Math.max(38, Math.min(56, W * 0.09))}px Arial`;
-  ctx.fillText(`${Math.round(score)}%`, cx, pctY);
+      ctx.beginPath();
+      ctx.arc(cx, cy, 14, 0, Math.PI * 2);
+      ctx.fillStyle = "#2f435c";
+      ctx.fill();
 
-  // label readiness di bawah persen
-  const finalLabel = String(label ?? scoreToLabel(score)).trim();
-  let labelColor = "#c49a00";
-  if (finalLabel === "High") labelColor = "#1f8f52";
-  else if (finalLabel === "Low") labelColor = "#d97706";
-  else if (finalLabel === "Critical") labelColor = "#b42318";
+      const pctY = cy + 6;
+      ctx.fillStyle = "#0f2f6b";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = `800 ${Math.max(42, Math.min(66, W * 0.11))}px Arial`;
+      ctx.fillText(`${Math.round(score)}%`, cx, pctY);
 
-  ctx.fillStyle = labelColor;
-  ctx.font = `700 ${Math.max(16, Math.min(22, W * 0.036))}px Arial`;
-  ctx.fillText(`${finalLabel} Readiness`, cx, pctY + 34);
-}
+      const finalLabel = String(label ?? scoreToLabel(score)).trim();
+
+      let pillBg = "#dce8e1";
+      let pillText = "#167a46";
+
+      if (finalLabel === "Moderate") {
+        pillBg = "#f8edc9";
+        pillText = "#9a7400";
+      } else if (finalLabel === "Low") {
+        pillBg = "#f8dfcf";
+        pillText = "#c96a1b";
+      } else if (finalLabel === "Critical") {
+        pillBg = "#f5d9d6";
+        pillText = "#b9382f";
+      }
+
+      const pillTextStr = `${finalLabel} Readiness`;
+      ctx.font = `700 ${Math.max(16, Math.min(20, W * 0.035))}px Arial`;
+
+      const textWidth = ctx.measureText(pillTextStr).width;
+      const paddingX = 24;
+      const pillW = textWidth + (paddingX * 2);
+      const pillH = 38;
+      const pillX = cx - pillW / 2;
+      const pillY = pctY + 28;
+
+      ctx.fillStyle = pillBg;
+      roundedRect(ctx, pillX, pillY, pillW, pillH, 20);
+      ctx.fill();
+
+      ctx.fillStyle = pillText;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(pillTextStr, cx, pillY + pillH / 2);
+    }
 
     function classByScore(score) {
       const s = Number(score);
@@ -370,7 +401,7 @@ labelAngles.forEach(l => {
 
           currentScore = score;
           currentLabel = label;
-          
+
           drawGauge(score, label);
 
           const sec = resp.section ?? resp.sections ?? {};
