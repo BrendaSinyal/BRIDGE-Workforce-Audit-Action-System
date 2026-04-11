@@ -194,10 +194,10 @@ function drawGauge(score, label) {
 
   // segment gauge
   const segSizes = [
-    { label: "Critical", size: 40, color: "#c93b2b" },
-    { label: "Low", size: 20, color: "#e67e22" },
-    { label: "Moderate", size: 20, color: "#f2c94c" },
-    { label: "High", size: 20, color: "#29b765" },
+        { label: "Critical", size: 40, color: "#e74c3c" },
+        { label: "Low", size: 20, color: "#f39c12" },
+        { label: "Moderate", size: 20, color: "#f1c40f" },
+        { label: "High", size: 20, color: "#2ecc71" },
   ];
 
   let currentAngle = Math.PI;
@@ -244,19 +244,17 @@ function drawGauge(score, label) {
   ctx.font = `800 ${Math.max(10, Math.min(14, W * 0.022))}px Arial`;
 
   const ringTextR = rInner + (thickness * 0.42);
-  const labelAngles = [
-    { text: "CRITICAL", angle: Math.PI + 0.20 * Math.PI, color: "#ffffff" },
-    { text: "LOW", angle: Math.PI + 0.50 * Math.PI, color: "#ffffff" },
-    { text: "MODERATE", angle: Math.PI + 0.70 * Math.PI, color: "#24476b" },
-    { text: "HIGH", angle: Math.PI + 0.90 * Math.PI, color: "#ffffff" },
-  ];
+const labelAngles = [
+  { text: "Critical", angle: Math.PI + (0.20 * Math.PI) },
+  { text: "Low", angle: Math.PI + (0.50 * Math.PI) },
+  { text: "Moderate", angle: Math.PI + (0.70 * Math.PI) },
+  { text: "High", angle: Math.PI + (0.90 * Math.PI) },
+];
 
-  labelAngles.forEach(item => {
-    const p = polar(cx, cy, ringTextR, item.angle);
-    ctx.fillStyle = item.color;
-    ctx.fillText(item.text, p.x, p.y);
-  });
-  ctx.restore();
+labelAngles.forEach(l => {
+  const p = polar(cx, cy, ringTextR, l.angle);
+  ctx.fillText(l.text, p.x, p.y);
+});
 
   // needle
   const ang = scoreToAngle(score);
@@ -285,7 +283,7 @@ function drawGauge(score, label) {
 
   // angka persen DI BAWAH ARCH
   const pctY = cy + 64;
-  ctx.fillStyle = "#3c5374";
+  ctx.fillStyle = "#0a2a5a";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.font = `800 ${Math.max(38, Math.min(56, W * 0.09))}px Arial`;
