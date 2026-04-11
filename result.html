@@ -17,7 +17,7 @@
     .left { flex: 1 1 520px; }
     .right { flex: 0 0 300px; }
 
-    #gauge { width: 100%; height: 340px; display:block; }
+    #gauge { width: 100%; height: 360px; display:block; }
 
     .legend { font-size: 14px; }
     .legItem { display:flex; align-items:center; gap:10px; margin: 8px 0; }
@@ -288,21 +288,19 @@
       ctx.fillStyle = "#2f435c";
       ctx.fill();
 
-      // Turunkan score dan needle visual bawah
-      const pctY = cy + 36;
+      const pctY = cy + 52;
       ctx.fillStyle = "#0f2f6b";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.font = `800 ${Math.max(42, Math.min(66, W * 0.11))}px Arial`;
       ctx.fillText(`${Math.round(score)}%`, cx, pctY);
 
-      // Pill style dibuat mengikuti referensi kanan
       const lbl = String(label ?? scoreToLabel(score)).trim();
 
       const pillW = Math.min(300, W * 0.56);
-      const pillH = 40;
+      const pillH = 38;
       const pillX = cx - pillW / 2;
-      const pillY = pctY + 44;
+      const pillY = pctY + 26;
 
       const pillBg =
         lbl === "High" ? "#e8f7ef" :
@@ -320,7 +318,7 @@
       roundedRect(ctx, pillX, pillY, pillW, pillH, 24);
       ctx.fill();
 
-      const lblFont = Math.max(14, Math.min(18, W * 0.030));
+      const lblFont = Math.max(13, Math.min(17, W * 0.028));
       ctx.fillStyle = pillText;
       ctx.font = `800 ${lblFont}px Arial`;
       ctx.textAlign = "center";
