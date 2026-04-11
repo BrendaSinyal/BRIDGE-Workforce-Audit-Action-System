@@ -193,7 +193,6 @@
       const rOuter = Math.min(W * 0.40, H * 0.58);
       const thickness = Math.min(64, rOuter * 0.36);
       const rInner = rOuter - thickness;
-      const rMid = (rOuter + rInner) / 2;
 
       const segSizes = [
         { label: "Critical", size: 40, color: "#e74c3c" },
@@ -289,7 +288,7 @@
       ctx.fillStyle = "#2f435c";
       ctx.fill();
 
-      const pctY = cy + 6;
+      const pctY = cy + 26;
       ctx.fillStyle = "#0f2f6b";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -313,17 +312,17 @@
       }
 
       const pillTextStr = `${finalLabel} Readiness`;
-      ctx.font = `700 ${Math.max(16, Math.min(20, W * 0.035))}px Arial`;
+      ctx.font = `700 ${Math.max(14, Math.min(18, W * 0.030))}px Arial`;
 
       const textWidth = ctx.measureText(pillTextStr).width;
-      const paddingX = 24;
+      const paddingX = 34;
       const pillW = textWidth + (paddingX * 2);
-      const pillH = 38;
+      const pillH = 40;
       const pillX = cx - pillW / 2;
-      const pillY = pctY + 28;
+      const pillY = pctY + 40;
 
       ctx.fillStyle = pillBg;
-      roundedRect(ctx, pillX, pillY, pillW, pillH, 20);
+      roundedRect(ctx, pillX, pillY, pillW, pillH, 22);
       ctx.fill();
 
       ctx.fillStyle = pillText;
