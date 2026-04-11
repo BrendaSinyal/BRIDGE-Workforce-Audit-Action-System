@@ -225,7 +225,7 @@ function drawGauge(score, label) {
   ];
 
   ctx.save();
-  ctx.strokeStyle = "#ffffff";
+  ctx.strokeStyle = "#f3f4f6";
   ctx.lineWidth = 3;
   boundaries.forEach(a => {
     const p1 = polar(cx, cy, rOuter, a);
@@ -266,7 +266,7 @@ labelAngles.forEach(l => {
   const left = polar(cx, cy, 8, perp);
   const right = polar(cx, cy, 8, perp + Math.PI);
 
-  ctx.fillStyle = "#243b55";
+  ctx.fillStyle = "#fff";
   ctx.beginPath();
   ctx.moveTo(tip.x, tip.y);
   ctx.lineTo(left.x, left.y);
