@@ -61,10 +61,10 @@
     .left { flex: 1 1 0; min-width: 0; }
     .right { flex: 0 0 250px; }
 
-    /* gauge sama seperti versi result terbaru */
+    /* hanya bagian gauge yang diubah */
     #gauge {
       width: 100%;
-      height: 240px;
+      height: 300px;
       display: block;
     }
 
@@ -487,29 +487,22 @@
       });
     }
 
-    function drawGauge(score, label){
+    /* hanya fungsi gauge yang diubah */
+    function drawGauge(score, label) {
       const canvas = document.getElementById("gauge");
       resizeCanvas(canvas);
       const ctx = canvas.getContext("2d");
 
       const W = canvas.clientWidth;
       const H = canvas.clientHeight;
-      ctx.clearRect(0,0,W,H);
+      ctx.clearRect(0, 0, W, H);
 
       const cx = W / 2;
-      const cy = H * 0.78;
+      const cy = H * 0.64;
 
-      const rOuter = Math.min(W * 0.36, H * 0.78);
-      const thickness = Math.min(38, rOuter * 0.35);
-      const rMid = rOuter - thickness / 2;
-      const rInner = Math.max(20, rOuter - thickness - 16);
-
-      ctx.lineCap = "butt";
-      ctx.lineWidth = thickness;
-      ctx.strokeStyle = "#e9ecef";
-      ctx.beginPath();
-      ctx.arc(cx, cy, rMid, Math.PI, 0, false);
-      ctx.stroke();
+      const rOuter = Math.min(W * 0.40, H * 0.58);
+      const thickness = Math.min(64, rOuter * 0.36);
+      const rInner = rOuter - thickness;
 
       const segSizes = [
         { label: "Critical", size: 40, color: "#e74c3c" },
@@ -525,11 +518,11 @@
         const a1 = currentAngle;
         const a2 = currentAngle + span;
 
-        ctx.fillStyle = seg.color;
         ctx.beginPath();
         ctx.arc(cx, cy, rOuter, a1, a2, false);
         ctx.arc(cx, cy, rInner, a2, a1, true);
         ctx.closePath();
+        ctx.fillStyle = seg.color;
         ctx.fill();
 
         currentAngle = a2;
@@ -542,7 +535,7 @@
       ];
 
       ctx.save();
-      ctx.strokeStyle = "#f3f4f6";
+      ctx.strokeStyle = "#ffffff";
       ctx.lineWidth = 4;
       boundaries.forEach(a => {
         const p1 = polar(cx, cy, rOuter, a);
@@ -554,21 +547,21 @@
       });
       ctx.restore();
 
-      ctx.fillStyle = "#fff";
+      ctx.save();
+      ctx.strokeStyle = "#cfd6dc";
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(cx, cy, rInner, Math.PI, Math.PI * 2, false);
-      ctx.lineTo(cx, cy);
-      ctx.closePath();
-      ctx.fill();
+      ctx.arc(cx, cy, rOuter, Math.PI, 2 * Math.PI, false);
+      ctx.stroke();
+      ctx.restore();
 
       ctx.save();
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillStyle = "#fff";
-      const ringFont = Math.max(7, Math.min(9, W * 0.018));
-      ctx.font = `800 ${ringFont}px Arial`;
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `700 ${Math.max(9, Math.min(12, W * 0.020))}px Arial`;
 
-      const ringTextR = rMid - 2;
+      const ringTextR = rInner + (thickness * 0.52);
       const labelAngles = [
         { text: "Critical", angle: Math.PI + (0.20 * Math.PI) },
         { text: "Low", angle: Math.PI + (0.50 * Math.PI) },
@@ -582,22 +575,16 @@
       });
       ctx.restore();
 
-      ctx.strokeStyle = "#cfd4da";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(cx, cy, rOuter + 1, Math.PI, Math.PI * 2, false);
-      ctx.stroke();
-
       const ang = scoreToAngle(score);
-      const needleLen = rInner * 0.98;
+      const needleLen = rInner + thickness * 0.52;
 
       const tip = polar(cx, cy, needleLen, ang);
       const back = polar(cx, cy, 18, ang + Math.PI);
-      const perp = ang + Math.PI/2;
-      const left = polar(cx, cy, 7, perp);
-      const right = polar(cx, cy, 7, perp + Math.PI);
+      const perp = ang + Math.PI / 2;
+      const left = polar(cx, cy, 8, perp);
+      const right = polar(cx, cy, 8, perp + Math.PI);
 
-      ctx.fillStyle = "#2c3e50";
+      ctx.fillStyle = "#2f435c";
       ctx.beginPath();
       ctx.moveTo(tip.x, tip.y);
       ctx.lineTo(left.x, left.y);
@@ -607,41 +594,41 @@
       ctx.fill();
 
       ctx.beginPath();
-      ctx.arc(cx, cy, 11, 0, Math.PI * 2);
+      ctx.arc(cx, cy, 14, 0, Math.PI * 2);
+      ctx.fillStyle = "#2f435c";
       ctx.fill();
 
+      const pctY = cy + 52;
+      ctx.fillStyle = "#0f2f6b";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillStyle = "#0a2a5a";
-      const pctFont = score >= 100
-        ? Math.max(30, Math.min(42, W * 0.075))
-        : Math.max(34, Math.min(50, W * 0.085));
-      ctx.font = `800 ${pctFont}px Arial`;
-      ctx.fillText(`${Math.round(score)}%`, cx, H * 0.48);
+      ctx.font = `800 ${Math.max(42, Math.min(66, W * 0.11))}px Arial`;
+      ctx.fillText(`${Math.round(score)}%`, cx, pctY);
 
       const lbl = String(label ?? scoreToLabel(score)).trim();
-      const pillW = Math.min(240, W * 0.54);
-      const pillH = 32;
+
+      const pillW = Math.min(300, W * 0.56);
+      const pillH = 36;
       const pillX = cx - pillW / 2;
-      const pillY = H - pillH - 6;
+      const pillY = pctY + 20;
 
       const pillBg =
         lbl === "High" ? "#e8f7ef" :
         lbl === "Moderate" ? "#fff4d8" :
-        lbl === "Low" ? "#f39c12" :
+        lbl === "Low" ? "#fde7d6" :
         "#ffe1e1";
 
       const pillText =
         lbl === "High" ? "#1a7a4a" :
         lbl === "Moderate" ? "#9a6a00" :
-        lbl === "Low" ? "#ffffff" :
+        lbl === "Low" ? "#c96a1b" :
         "#a10f0f";
 
       ctx.fillStyle = pillBg;
-      roundedRect(ctx, pillX, pillY, pillW, pillH, 18);
+      roundedRect(ctx, pillX, pillY, pillW, pillH, 24);
       ctx.fill();
 
-      const lblFont = Math.max(12, Math.min(16, W * 0.028));
+      const lblFont = Math.max(13, Math.min(17, W * 0.028));
       ctx.fillStyle = pillText;
       ctx.font = `800 ${lblFont}px Arial`;
       ctx.textAlign = "center";
