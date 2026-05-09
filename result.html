@@ -188,7 +188,7 @@
       ctx.clearRect(0, 0, W, H);
 
       const cx = W / 2;
-      const cy = H * 0.64;
+      const cy = H * 0.55;
 
       const rOuter = Math.min(W * 0.40, H * 0.58);
       const thickness = Math.min(64, rOuter * 0.36);
@@ -249,7 +249,7 @@
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillStyle = "#ffffff";
-      ctx.font = `700 ${Math.max(9, Math.min(12, W * 0.020))}px Arial`;
+      ctx.font = `800 ${Math.max(13, Math.min(18, W * 0.030))}px Arial`;
 
       const ringTextR = rInner + (thickness * 0.52);
       const labelAngles = [
@@ -288,7 +288,7 @@
       ctx.fillStyle = "#2f435c";
       ctx.fill();
 
-      const pctY = cy + 52;
+      const pctY = cy + 30;
       ctx.fillStyle = "#0f2f6b";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -300,7 +300,7 @@
       const pillW = Math.min(300, W * 0.56);
       const pillH = 36;
       const pillX = cx - pillW / 2;
-      const pillY = pctY + 20;
+      const pillY = pctY + 15;
 
       const pillBg =
         lbl === "High" ? "#e8f7ef" :
