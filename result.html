@@ -269,7 +269,7 @@
       ctx.restore();
 
       const ang = scoreToAngle(score);
-      const needleLen = rInner + thickness * 0.28;
+      const needleLen = rInner + thickness * 0.26;
 
       const tip = polar(needleCx, needleCy, needleLen, ang);
       const back = polar(needleCx, needleCy, 18, ang + Math.PI);
@@ -291,11 +291,11 @@
       ctx.fillStyle = "#2f435c";
       ctx.fill();
 
-      const pctY = needleCy + 38;
+      const pctY = needleCy + 36;
       ctx.fillStyle = "#0f2f6b";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.font = `900 ${Math.max(52, Math.min(74, W * 0.125))}px Arial`;
+      ctx.font = `900 ${Math.max(54, Math.min(76, W * 0.13))}px Arial`;
       ctx.fillText(`${Math.round(score)}%`, cx, pctY);
 
       const lbl = String(label ?? scoreToLabel(score)).trim();
@@ -303,7 +303,7 @@
       const pillW = Math.min(300, W * 0.56);
       const pillH = 36;
       const pillX = cx - pillW / 2;
-      const pillY = pctY + 14;
+      const pillY = pctY + 12;
 
       const pillBg =
         lbl === "High" ? "#e8f7ef" :
