@@ -291,11 +291,11 @@
       ctx.fillStyle = "#2f435c";
       ctx.fill();
 
-      const pctY = needleCy + 36;
+      const pctY = needleCy + 48;
       ctx.fillStyle = "#0f2f6b";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.font = `900 ${Math.max(54, Math.min(76, W * 0.13))}px Arial`;
+      ctx.font = `900 ${Math.max(48, Math.min(68, W * 0.115))}px Arial`;
       ctx.fillText(`${Math.round(score)}%`, cx, pctY);
 
       const lbl = String(label ?? scoreToLabel(score)).trim();
@@ -303,7 +303,7 @@
       const pillW = Math.min(300, W * 0.56);
       const pillH = 36;
       const pillX = cx - pillW / 2;
-      const pillY = pctY + 12;
+      const pillY = pctY + 18;
 
       const pillBg =
         lbl === "High" ? "#e8f7ef" :
