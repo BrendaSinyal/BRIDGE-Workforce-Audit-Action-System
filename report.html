@@ -736,22 +736,33 @@
           */
           pdf.setFont("helvetica", "bold");
           pdf.setFontSize(6.5);
+          
+          let headerX = 10;
+          const headerY = 8;
+          const gap = 2.2;
+          
+          const titleText = "B/RIDGE™ Workforce Action Plan";
+          const sepText = "|";
+          
           pdf.setTextColor(30, 70, 105);
-        
-          pdf.text("B/RIDGE™ Workforce Action Plan", 10, 8);
-        
+          pdf.text(titleText, headerX, headerY);
+          headerX += pdf.getTextWidth(titleText) + gap;
+          
           pdf.setTextColor(90, 90, 90);
-          pdf.text("|", 46, 8);
-        
+          pdf.text(sepText, headerX, headerY);
+          headerX += pdf.getTextWidth(sepText) + gap;
+          
           pdf.setTextColor(rCol, gCol, bCol);
-          pdf.text(readinessText, 49, 8);
-        
+          pdf.text(readinessText, headerX, headerY);
+          headerX += pdf.getTextWidth(readinessText) + gap;
+          
           pdf.setTextColor(90, 90, 90);
-          pdf.text("|", 75, 8);
-        
+          pdf.text(sepText, headerX, headerY);
+          headerX += pdf.getTextWidth(sepText) + gap;
+          
           pdf.setTextColor(rCol, gCol, bCol);
-          pdf.text(planText, 78, 8);
-        
+          pdf.text(planText, headerX, headerY);
+          
           pdf.setDrawColor(rCol, gCol, bCol);
           pdf.setLineWidth(0.35);
           pdf.line(10, 10, pageWidth - 10, 10);
