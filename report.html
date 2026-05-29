@@ -64,7 +64,7 @@
     /* hanya bagian gauge yang diubah */
     #gauge {
       width: 100%;
-      height: 300px;
+      height: 330px;
       display: block;
     }
 
@@ -500,11 +500,14 @@
       ctx.clearRect(0, 0, W, H);
 
       const cx = W / 2;
-      const cy = H * 0.64;
+      const cy = H * 0.60;
 
       const rOuter = Math.min(W * 0.40, H * 0.58);
       const thickness = Math.min(64, rOuter * 0.36);
       const rInner = rOuter - thickness;
+
+      const needleCx = cx;
+      const needleCy = cy - (thickness * 0.60);
 
       const segSizes = [
         { label: "Critical", size: 40, color: "#e74c3c" },
@@ -578,13 +581,13 @@
       ctx.restore();
 
       const ang = scoreToAngle(score);
-      const needleLen = rInner + thickness * 0.52;
+      const needleLen = rInner + thickness * 0.26;
 
-      const tip = polar(cx, cy, needleLen, ang);
-      const back = polar(cx, cy, 18, ang + Math.PI);
+      const tip = polar(needleCx, needleCy, needleLen, ang);
+      const back = polar(needleCx, needleCy, 18, ang + Math.PI);
       const perp = ang + Math.PI / 2;
-      const left = polar(cx, cy, 8, perp);
-      const right = polar(cx, cy, 8, perp + Math.PI);
+      const left = polar(needleCx, needleCy, 8, perp);
+      const right = polar(needleCx, needleCy, 8, perp + Math.PI);
 
       ctx.fillStyle = "#2f435c";
       ctx.beginPath();
@@ -596,15 +599,15 @@
       ctx.fill();
 
       ctx.beginPath();
-      ctx.arc(cx, cy, 14, 0, Math.PI * 2);
+      ctx.arc(needleCx, needleCy, 14, 0, Math.PI * 2);
       ctx.fillStyle = "#2f435c";
       ctx.fill();
 
-      const pctY = cy + 52;
+      const pctY = needleCy + 48;
       ctx.fillStyle = "#0f2f6b";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.font = `800 ${Math.max(42, Math.min(66, W * 0.11))}px Arial`;
+      ctx.font = `900 ${Math.max(38, Math.min(54, W * 0.09))}px Arial`;
       ctx.fillText(`${Math.round(score)}%`, cx, pctY);
 
       const lbl = String(label ?? scoreToLabel(score)).trim();
@@ -612,7 +615,7 @@
       const pillW = Math.min(300, W * 0.56);
       const pillH = 36;
       const pillX = cx - pillW / 2;
-      const pillY = pctY + 20;
+      const pillY = pctY + 22;
 
       const pillBg =
         lbl === "High" ? "#e8f7ef" :
