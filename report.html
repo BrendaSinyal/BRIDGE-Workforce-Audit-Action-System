@@ -641,6 +641,54 @@
       ctx.fillText(`${lbl} Readiness`, cx, pillY + pillH / 2);
     }
 
+    function fixActionListNumbersForPdf(root) {
+      if (!root) return;
+    
+      root.querySelectorAll("ol.actionList").forEach(ol => {
+        ol.style.listStyle = "none";
+        ol.style.paddingLeft = "0";
+        ol.style.marginLeft = "0";
+    
+        const items = Array.from(ol.children).filter(el => el.tagName === "LI");
+    
+        items.forEach((li, index) => {
+          li.style.listStyle = "none";
+          li.style.display = "flex";
+          li.style.alignItems = "flex-start";
+          li.style.gap = "8px";
+          li.style.margin = "8px 0";
+          li.style.lineHeight = "1.55";
+          li.style.color = "#2f2f2f";
+    
+          if (!li.querySelector(".pdfListNo")) {
+            const num = document.createElement("span");
+            num.className = "pdfListNo";
+            num.textContent = `${index + 1}.`;
+    
+            num.style.minWidth = "20px";
+            num.style.color = "#334e6d";
+            num.style.fontWeight = "800";
+            num.style.fontSize = "12.5px";
+            num.style.lineHeight = "1.55";
+            num.style.display = "inline-block";
+            num.style.textAlign = "right";
+    
+            const content = document.createElement("span");
+            content.className = "pdfListContent";
+            content.style.flex = "1";
+            content.style.display = "inline-block";
+    
+            while (li.firstChild) {
+              content.appendChild(li.firstChild);
+            }
+    
+            li.appendChild(num);
+            li.appendChild(content);
+          }
+        });
+      });
+    }
+    
     async function downloadActionPlanPdf() {
       const btn = document.getElementById("btnDownloadPdf");
       const target = document.getElementById("planCard");
@@ -659,6 +707,7 @@
         btn.textContent = "Generating PDF...";
 
         const clone = target.cloneNode(true);
+        fixActionListNumbersForPdf(clone);
         enhancePlanForPdf(clone);
 
         tempWrap = document.createElement("div");
