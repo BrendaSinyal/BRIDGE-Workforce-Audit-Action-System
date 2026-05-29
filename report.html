@@ -683,7 +683,7 @@
         document.body.appendChild(tempWrap);
 
         const opt = {
-          margin: [18, 10, 22, 10],
+          margin: [18, 10, 26, 10],
           filename: "bridge-action-plan.pdf",
           image: { type: "jpeg", quality: 0.98 },
           html2canvas: {
@@ -796,11 +796,22 @@
           pdf.setTextColor(100, 100, 100);
         
           const footerText =
-            `CONFIDENTIAL   |   Building Future-Ready, Multi-Generational Workplaces   |   Page ${i}`;
-        
-          pdf.text(footerText, pageWidth / 2, pageHeight - 7, {
-            align: "center"
-          });
+              `CONFIDENTIAL   |   Building Future-Ready, Multi-Generational Workplaces   |   Page ${i}`;
+            
+            pdf.text(footerText, pageWidth / 2, pageHeight - 9, {
+              align: "center"
+            });
+            
+            pdf.setFont("helvetica", "bold");
+            pdf.setFontSize(6.5);
+            pdf.setTextColor(30, 30, 30);
+            
+            pdf.text(
+              "© 2025 Success Masters Ltd. All rights reserved. B/RIDGE™ is a registered trademark",
+              pageWidth / 2,
+              pageHeight - 5,
+              { align: "center" }
+            );
         }
 
         pdf.save("bridge-action-plan.pdf");
