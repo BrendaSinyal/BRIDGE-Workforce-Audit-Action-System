@@ -279,12 +279,7 @@
         width: 220px;
       }
     }
-
-    #planMount .section{
-      break-inside: auto;
-      page-break-inside: auto;
-    }
-    
+   
     #planMount .section li,
     #planMount .section p{
       break-inside: auto;
@@ -711,6 +706,33 @@
         section.parentNode.insertBefore(pageBreak, section);
       });
     }
+
+    function addSmartSectionBreaksForPdf(root) {
+      if (!root) return;
+    
+      const sections = Array.from(root.querySelectorAll("#planMount .section"));
+      const pageHeightPx = 1122; // kira-kira tinggi A4 pada html2canvas scale normal
+      const topSafe = 80;
+      const bottomSafe = 150;
+      const minSectionStartSpace = 260;
+    
+      sections.forEach((section, index) => {
+        if (index === 0) return;
+    
+        const rect = section.getBoundingClientRect();
+        const yInPage = (rect.top - root.getBoundingClientRect().top) % pageHeightPx;
+        const remaining = pageHeightPx - yInPage - bottomSafe;
+    
+        if (remaining < minSectionStartSpace) {
+          const pageBreak = document.createElement("div");
+          pageBreak.className = "html2pdf__page-break";
+          pageBreak.style.height = "0";
+          pageBreak.style.margin = "0";
+          pageBreak.style.padding = "0";
+          section.parentNode.insertBefore(pageBreak, section);
+        }
+      });
+    }
     
     async function downloadActionPlanPdf() {
       const btn = document.getElementById("btnDownloadPdf");
@@ -755,6 +777,7 @@
 
         tempWrap.appendChild(clone);
         document.body.appendChild(tempWrap);
+        addSmartSectionBreaksForPdf(clone);
 
         const opt = {
           margin: [18, 10, 26, 10],
