@@ -227,17 +227,13 @@
     }
 
     .pdf-avoid-break,
-    .planInner li,
     .planInner img,
     .planInner table,
     .planInner tr,
     .planInner h1,
     .planInner h2,
     .planInner h3,
-    .planInner h4,
-    .planInner .section,
-    .planInner .card,
-    .planInner .block {
+    .planInner h4 {
       break-inside: avoid;
       page-break-inside: avoid;
     }
@@ -467,7 +463,7 @@
 
     function enhancePlanForPdf(root) {
       if (!root) return;
-      root.querySelectorAll("li, img, table, tr, h1, h2, h3, h4, .section, .card, .block").forEach(el => {
+      root.querySelectorAll("img, table, tr, h1, h2, h3, h4").forEach(el => {
         el.classList.add("pdf-avoid-break");
       });
     }
@@ -748,7 +744,7 @@
             orientation: "portrait"
           },
           pagebreak: {
-            mode: ["css", "legacy"]
+            mode: ["legacy"]
           }
         };
 
