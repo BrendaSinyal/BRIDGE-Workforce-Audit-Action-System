@@ -279,6 +279,19 @@
         width: 220px;
       }
     }
+
+    #planMount .section{
+      break-before: page;
+      page-break-before: always;
+      break-inside: auto;
+      page-break-inside: auto;
+    }
+    
+    #planMount .section li,
+    #planMount .section p{
+      break-inside: auto;
+      page-break-inside: auto;
+    }
   </style>
 </head>
 
@@ -744,7 +757,7 @@
             orientation: "portrait"
           },
           pagebreak: {
-            mode: ["legacy"]
+            mode: ["css", "legacy"]
           }
         };
 
