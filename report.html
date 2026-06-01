@@ -281,8 +281,6 @@
     }
 
     #planMount .section{
-      break-before: page;
-      page-break-before: always;
       break-inside: auto;
       page-break-inside: auto;
     }
@@ -697,6 +695,22 @@
         });
       });
     }
+
+    function addSectionPageBreaksForPdf(root) {
+      if (!root) return;
+    
+      const sections = root.querySelectorAll("#planMount .section");
+    
+      sections.forEach(section => {
+        const pageBreak = document.createElement("div");
+        pageBreak.className = "html2pdf__page-break";
+        pageBreak.style.height = "0";
+        pageBreak.style.margin = "0";
+        pageBreak.style.padding = "0";
+    
+        section.parentNode.insertBefore(pageBreak, section);
+      });
+    }
     
     async function downloadActionPlanPdf() {
       const btn = document.getElementById("btnDownloadPdf");
@@ -716,9 +730,11 @@
         btn.textContent = "Generating PDF...";
 
         const clone = target.cloneNode(true);
-        fixActionListNumbersForPdf(clone);
-        enhancePlanForPdf(clone);
 
+        fixActionListNumbersForPdf(clone);
+        addSectionPageBreaksForPdf(clone);
+        enhancePlanForPdf(clone);
+        
         tempWrap = document.createElement("div");
         tempWrap.style.position = "fixed";
         tempWrap.style.left = "-100000px";
@@ -757,7 +773,7 @@
             orientation: "portrait"
           },
           pagebreak: {
-            mode: ["css", "legacy"]
+            mode: ["legacy"]
           }
         };
 
