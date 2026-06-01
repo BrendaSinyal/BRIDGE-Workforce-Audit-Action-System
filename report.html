@@ -732,7 +732,7 @@
         const clone = target.cloneNode(true);
 
         fixActionListNumbersForPdf(clone);
-        addSectionPageBreaksForPdf(clone);
+        //addSectionPageBreaksForPdf(clone);
         enhancePlanForPdf(clone);
         
         tempWrap = document.createElement("div");
@@ -773,7 +773,7 @@
             orientation: "portrait"
           },
           pagebreak: {
-            mode: ["legacy"]
+            mode: ["css", "legacy"]
           }
         };
 
