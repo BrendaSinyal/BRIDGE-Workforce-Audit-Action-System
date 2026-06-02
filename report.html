@@ -714,26 +714,29 @@
       if (!root) return;
     
       const sections = Array.from(root.querySelectorAll("#planMount .section"));
-      const pageHeightPx = 1122; // kira-kira tinggi A4 pada html2canvas scale normal
-      const topSafe = 80;
-      const bottomSafe = 150;
-      const minSectionStartSpace = 340;
     
-      sections.forEach((section, index) => {
-        if (index === 0) return;
+      const pageHeightPx = 1122;
+      const bottomSafe = 220;
+      const minSectionStartSpace = 520;
     
+      sections.forEach((section) => {
+        const rootTop = root.getBoundingClientRect().top;
         const rect = section.getBoundingClientRect();
-        const yInPage = (rect.top - root.getBoundingClientRect().top) % pageHeightPx;
+    
+        const yInPage = (rect.top - rootTop) % pageHeightPx;
         const remaining = pageHeightPx - yInPage - bottomSafe;
     
         if (remaining < minSectionStartSpace) {
-          const pageBreak = document.createElement("div");
-          pageBreak.className = "html2pdf__page-break";
-          pageBreak.style.height = "0";
-          pageBreak.style.margin = "0";
-          pageBreak.style.padding = "0";
-          section.parentNode.insertBefore(pageBreak, section);
+          section.style.breakBefore = "page";
+          section.style.pageBreakBefore = "always";
+          section.style.breakInside = "auto";
+          section.style.pageBreakInside = "auto";
         }
+      });
+    
+      root.querySelectorAll("#planMount .section li, #planMount .section p").forEach(el => {
+        el.style.breakInside = "auto";
+        el.style.pageBreakInside = "auto";
       });
     }
 
@@ -821,19 +824,7 @@
 
         tempWrap.appendChild(clone);
         document.body.appendChild(tempWrap);
-
-        clone.querySelectorAll("#planMount .section").forEach((section, index) => {
-          section.style.breakBefore = "page";
-          section.style.pageBreakBefore = "always";
-          section.style.breakInside = "auto";
-          section.style.pageBreakInside = "auto";
-        });
-        
-        clone.querySelectorAll("#planMount .section li, #planMount .section p").forEach(el => {
-          el.style.breakInside = "auto";
-          el.style.pageBreakInside = "auto";
-        });
-        
+        addSmartSectionBreaksForPdf(clone);
         await new Promise(resolve => requestAnimationFrame(resolve));
         
         const opt = {
