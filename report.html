@@ -844,8 +844,9 @@
           }
         };
 
+        const worker = html2pdf().set(opt).from(clone).toPdf();
         const pdf = await worker.get("pdf");
-
+        
         removeLikelyBlankPages(pdf);
         removeTrailingBlankPage(pdf);
         
