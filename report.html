@@ -821,7 +821,19 @@
 
         tempWrap.appendChild(clone);
         document.body.appendChild(tempWrap);
-              
+
+        clone.querySelectorAll("#planMount .section").forEach((section, index) => {
+          section.style.breakBefore = "page";
+          section.style.pageBreakBefore = "always";
+          section.style.breakInside = "auto";
+          section.style.pageBreakInside = "auto";
+        });
+        
+        clone.querySelectorAll("#planMount .section li, #planMount .section p").forEach(el => {
+          el.style.breakInside = "auto";
+          el.style.pageBreakInside = "auto";
+        });
+        
         await new Promise(resolve => requestAnimationFrame(resolve));
         
         const opt = {
@@ -841,16 +853,13 @@
             orientation: "portrait"
           },
           pagebreak: {
-            mode: ["css", "legacy"],
-            before: ["#planMount .section"]
+            mode: ["css", "legacy"]
           }
         };
 
         const worker = html2pdf().set(opt).from(clone).toPdf();
         const pdf = await worker.get("pdf");
-        
-        removeTrailingBlankPage(pdf, false);
-        
+             
         let logoData = null;
         try {
           logoData = await loadImageAsDataURL(logoUrl);
