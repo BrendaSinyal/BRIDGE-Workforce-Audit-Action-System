@@ -714,7 +714,7 @@
       const pageHeightPx = 1122; // kira-kira tinggi A4 pada html2canvas scale normal
       const topSafe = 80;
       const bottomSafe = 150;
-      const minSectionStartSpace = 260;
+      const minSectionStartSpace = 340;
     
       sections.forEach((section, index) => {
         if (index === 0) return;
@@ -734,18 +734,28 @@
       });
     }
 
-    function removeTrailingBlankPage(pdf) {
+    function removeTrailingBlankPage(pdf, forceRemoveLastBlank = true) {
       let totalPages = pdf.internal.getNumberOfPages();
     
-      while (totalPages > 1) {
-        const lastPage = pdf.internal.pages[totalPages];
+      if (totalPages <= 1) return;
     
-        if (!lastPage || lastPage.length <= 5) {
-          pdf.deletePage(totalPages);
-          totalPages = pdf.internal.getNumberOfPages();
-        } else {
-          break;
-        }
+      const lastPage = pdf.internal.pages[totalPages];
+    
+      /*
+        html2pdf/html2canvas kadang membuat halaman kosong terakhir
+        tetapi tetap berisi image command, jadi length check saja tidak cukup.
+      */
+      if (!lastPage || lastPage.length <= 5) {
+        pdf.deletePage(totalPages);
+        return;
+      }
+    
+      /*
+        Aktifkan ini jika dari hasil PDF memang selalu muncul
+        satu halaman kosong terakhir.
+      */
+      if (forceRemoveLastBlank) {
+        pdf.deletePage(totalPages);
       }
     }
     
@@ -794,6 +804,8 @@
         document.body.appendChild(tempWrap);
         addSmartSectionBreaksForPdf(clone);
 
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        
         const opt = {
           margin: [18, 10, 26, 10],
           filename: "bridge-action-plan.pdf",
