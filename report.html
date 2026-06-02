@@ -735,18 +735,17 @@
     }
 
     function removeTrailingBlankPage(pdf) {
-      const totalPages = pdf.internal.getNumberOfPages();
+      let totalPages = pdf.internal.getNumberOfPages();
     
-      if (totalPages <= 1) return;
+      while (totalPages > 1) {
+        const lastPage = pdf.internal.pages[totalPages];
     
-      const lastPage = pdf.internal.pages[totalPages];
-    
-      /*
-        Halaman kosong biasanya hanya punya sedikit command internal.
-        Kalau ada konten real, command-nya jauh lebih banyak.
-      */
-      if (!lastPage || lastPage.length <= 3) {
-        pdf.deletePage(totalPages);
+        if (!lastPage || lastPage.length <= 5) {
+          pdf.deletePage(totalPages);
+          totalPages = pdf.internal.getNumberOfPages();
+        } else {
+          break;
+        }
       }
     }
     
