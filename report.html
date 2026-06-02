@@ -733,7 +733,7 @@
         }
       });
     }
-
+  
     function removeTrailingBlankPage(pdf, forceRemoveLastBlank = true) {
       let totalPages = pdf.internal.getNumberOfPages();
     
@@ -779,7 +779,6 @@
         const clone = target.cloneNode(true);
 
         fixActionListNumbersForPdf(clone);
-        //addSectionPageBreaksForPdf(clone);
         enhancePlanForPdf(clone);
         
         tempWrap = document.createElement("div");
@@ -802,8 +801,9 @@
 
         tempWrap.appendChild(clone);
         document.body.appendChild(tempWrap);
-        addSmartSectionBreaksForPdf(clone);
-
+        
+        addSectionPageBreaksForPdf(clone);
+        
         await new Promise(resolve => requestAnimationFrame(resolve));
         
         const opt = {
