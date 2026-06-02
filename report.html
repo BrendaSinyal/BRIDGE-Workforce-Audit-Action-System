@@ -733,6 +733,22 @@
         }
       });
     }
+
+    function removeTrailingBlankPage(pdf) {
+      const totalPages = pdf.internal.getNumberOfPages();
+    
+      if (totalPages <= 1) return;
+    
+      const lastPage = pdf.internal.pages[totalPages];
+    
+      /*
+        Halaman kosong biasanya hanya punya sedikit command internal.
+        Kalau ada konten real, command-nya jauh lebih banyak.
+      */
+      if (!lastPage || lastPage.length <= 3) {
+        pdf.deletePage(totalPages);
+      }
+    }
     
     async function downloadActionPlanPdf() {
       const btn = document.getElementById("btnDownloadPdf");
@@ -802,7 +818,9 @@
 
         const worker = html2pdf().set(opt).from(clone).toPdf();
         const pdf = await worker.get("pdf");
-
+        
+        removeTrailingBlankPage(pdf);
+        
         let logoData = null;
         try {
           logoData = await loadImageAsDataURL(logoUrl);
