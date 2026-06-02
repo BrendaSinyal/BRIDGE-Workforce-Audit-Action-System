@@ -848,7 +848,7 @@
         const pdf = await worker.get("pdf");
         
         removeLikelyBlankPages(pdf);
-        removeTrailingBlankPage(pdf);
+        removeTrailingBlankPage(pdf, false);
         
         let logoData = null;
         try {
