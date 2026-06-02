@@ -928,7 +928,9 @@
 
         const worker = html2pdf().set(opt).from(clone).toPdf();
         const pdf = await worker.get("pdf");
-             
+        
+        removeTrailingBlankPage(pdf, true);
+                     
         let logoData = null;
         try {
           logoData = await loadImageAsDataURL(logoUrl);
