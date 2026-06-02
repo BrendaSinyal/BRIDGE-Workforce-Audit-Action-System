@@ -269,6 +269,24 @@
       border: 0;
     }
 
+    .planInner{
+      padding-bottom: 80px !important;
+    }
+    
+    .planInner .section{
+      margin-bottom: 26px;
+    }
+    
+    .planInner h4:not(.lensTitle){
+      margin-top: 28px !important;
+      margin-bottom: 18px !important;
+    }
+    
+    .planInner li{
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
     @media (max-width: 900px) {
       .row { flex-wrap: wrap; }
       .right { flex: 1 1 100%; }
@@ -669,6 +687,8 @@
           li.style.margin = "8px 0";
           li.style.lineHeight = "1.55";
           li.style.color = "#2f2f2f";
+          li.style.breakInside = "avoid";
+          li.style.pageBreakInside = "avoid";
     
           if (!li.querySelector(".pdfListNo")) {
             const num = document.createElement("span");
@@ -887,11 +907,11 @@
 
         tempWrap.appendChild(clone);
         document.body.appendChild(tempWrap);
-        pushDanglingSectionHeadsForPdf(clone);
+        //pushDanglingSectionHeadsForPdf(clone);
         await new Promise(resolve => requestAnimationFrame(resolve));
         
         const opt = {
-          margin: [18, 10, 36, 10],
+          margin: [18, 10, 30, 10],
           filename: "bridge-action-plan.pdf",
           image: { type: "jpeg", quality: 0.98 },
           html2canvas: {
