@@ -238,6 +238,15 @@
       page-break-inside: avoid;
     }
 
+    .pdfSectionBreak{
+      display: block;
+      height: 1px;
+      margin: 0;
+      padding: 0;
+      page-break-after: always;
+      break-after: page;
+    }
+
     .planInner h1,
     .planInner h2,
     .planInner h3,
@@ -694,14 +703,17 @@
     function addSectionPageBreaksForPdf(root) {
       if (!root) return;
     
-      const sections = root.querySelectorAll("#planMount .section");
+      const sections = Array.from(root.querySelectorAll("#planMount .section"));
     
-      sections.forEach(section => {
+      sections.forEach((section) => {
         const pageBreak = document.createElement("div");
-        pageBreak.className = "html2pdf__page-break";
-        pageBreak.style.height = "0";
+        pageBreak.className = "pdfSectionBreak";
+        pageBreak.style.display = "block";
+        pageBreak.style.height = "1px";
         pageBreak.style.margin = "0";
         pageBreak.style.padding = "0";
+        pageBreak.style.pageBreakAfter = "always";
+        pageBreak.style.breakAfter = "page";
     
         section.parentNode.insertBefore(pageBreak, section);
       });
