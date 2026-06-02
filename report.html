@@ -733,7 +733,24 @@
         }
       });
     }
-  
+
+    function removeLikelyBlankPages(pdf) {
+      let totalPages = pdf.internal.getNumberOfPages();
+    
+      for (let pageNo = totalPages; pageNo >= 1; pageNo--) {
+        const page = pdf.internal.pages[pageNo];
+    
+        /*
+          Blank dari html2pdf kadang punya command,
+          tapi umumnya jauh lebih sedikit dari halaman berisi konten.
+          Jangan hapus page 1.
+        */
+        if (pageNo > 1 && (!page || page.length <= 8)) {
+          pdf.deletePage(pageNo);
+        }
+      }
+    }
+    
     function removeTrailingBlankPage(pdf, forceRemoveLastBlank = true) {
       let totalPages = pdf.internal.getNumberOfPages();
     
@@ -827,9 +844,9 @@
           }
         };
 
-        const worker = html2pdf().set(opt).from(clone).toPdf();
         const pdf = await worker.get("pdf");
-        
+
+        removeLikelyBlankPages(pdf);
         removeTrailingBlankPage(pdf);
         
         let logoData = null;
