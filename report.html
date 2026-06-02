@@ -655,9 +655,10 @@
     
         items.forEach((li, index) => {
           li.style.listStyle = "none";
-          li.style.display = "flex";
-          li.style.alignItems = "flex-start";
-          li.style.gap = "8px";
+          li.style.display = "grid";
+          li.style.gridTemplateColumns = "24px 1fr";
+          li.style.columnGap = "8px";
+          li.style.alignItems = "start";
           li.style.margin = "8px 0";
           li.style.lineHeight = "1.55";
           li.style.color = "#2f2f2f";
@@ -677,8 +678,8 @@
     
             const content = document.createElement("span");
             content.className = "pdfListContent";
-            content.style.flex = "1";
-            content.style.display = "inline-block";
+            content.style.display = "block";
+            content.style.minWidth = "0";
     
             while (li.firstChild) {
               content.appendChild(li.firstChild);
@@ -828,7 +829,7 @@
         await new Promise(resolve => requestAnimationFrame(resolve));
         
         const opt = {
-          margin: [18, 10, 26, 10],
+          margin: [18, 10, 34, 10],
           filename: "bridge-action-plan.pdf",
           image: { type: "jpeg", quality: 0.98 },
           html2canvas: {
