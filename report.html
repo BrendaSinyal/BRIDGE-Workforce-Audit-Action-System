@@ -238,15 +238,6 @@
       page-break-inside: avoid;
     }
 
-    .pdfSectionBreak{
-      display: block;
-      height: 1px;
-      margin: 0;
-      padding: 0;
-      page-break-after: always;
-      break-after: page;
-    }
-
     .planInner h1,
     .planInner h2,
     .planInner h3,
@@ -830,9 +821,7 @@
 
         tempWrap.appendChild(clone);
         document.body.appendChild(tempWrap);
-        
-        addSectionPageBreaksForPdf(clone);
-        
+              
         await new Promise(resolve => requestAnimationFrame(resolve));
         
         const opt = {
@@ -852,7 +841,8 @@
             orientation: "portrait"
           },
           pagebreak: {
-            mode: ["css", "legacy"]
+            mode: ["css", "legacy"],
+            before: ["#planMount .section"]
           }
         };
 
