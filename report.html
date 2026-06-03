@@ -993,7 +993,7 @@
         const worker = html2pdf().set(opt).from(clone).toPdf();
         const pdf = await worker.get("pdf");
         
-        removeTrailingBlankPage(pdf, true);
+        removeTrailingBlankPage(pdf, false);
                      
         let logoData = null;
         try {
