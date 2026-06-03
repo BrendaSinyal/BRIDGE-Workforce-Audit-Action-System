@@ -974,8 +974,8 @@
         const isStandard = planTypeLower.includes("standard");
         
         const pdfMargin = isPremium
-          ? [18, 10, 38, 10]   // Premium: bottom lebih besar supaya tidak kepotong footer
-          : [18, 10, 26, 10];  // Standard: lebih rapat supaya tidak bikin blank page
+          ? [18, 10, 50, 10]   // Premium: tambah ruang bawah agar teks tidak ketimpa footer
+          : [18, 10, 26, 10];  // Standard: tetap, karena sudah bagus
         
         const opt = {
           margin: pdfMargin,
@@ -1002,11 +1002,7 @@
         const worker = html2pdf().set(opt).from(clone).toPdf();
         const pdf = await worker.get("pdf");
         
-        if (isStandard) {
-          removeTrailingBlankPage(pdf, true);
-        } else {
-          removeTrailingBlankPage(pdf, false);
-        }
+        removeTrailingBlankPage(pdf, false);
                      
         let logoData = null;
         try {
