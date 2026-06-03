@@ -296,8 +296,8 @@
     }
       
     .planInner li{
-      break-inside: avoid;
-      page-break-inside: avoid;
+      break-inside: auto;
+      page-break-inside: auto;
     }
 
     @media (max-width: 900px) {
@@ -967,9 +967,18 @@
         document.body.appendChild(tempWrap);
         //pushDanglingSectionHeadsForPdf(clone);
         await new Promise(resolve => requestAnimationFrame(resolve));
+
+        const planTypeLower = String(currentPlanType || "").toLowerCase();
+
+        const isPremium = planTypeLower.includes("premium");
+        const isStandard = planTypeLower.includes("standard");
+        
+        const pdfMargin = isPremium
+          ? [18, 10, 38, 10]   // Premium: bottom lebih besar supaya tidak kepotong footer
+          : [18, 10, 26, 10];  // Standard: lebih rapat supaya tidak bikin blank page
         
         const opt = {
-          margin: [18, 10, 30, 10],
+          margin: pdfMargin,
           filename: "bridge-action-plan.pdf",
           image: { type: "jpeg", quality: 0.98 },
           html2canvas: {
@@ -993,7 +1002,11 @@
         const worker = html2pdf().set(opt).from(clone).toPdf();
         const pdf = await worker.get("pdf");
         
-        removeTrailingBlankPage(pdf, false);
+        if (isStandard) {
+          removeTrailingBlankPage(pdf, true);
+        } else {
+          removeTrailingBlankPage(pdf, false);
+        }
                      
         let logoData = null;
         try {
