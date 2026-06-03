@@ -695,8 +695,8 @@
           li.style.margin = "8px 0";
           li.style.lineHeight = "1.55";
           li.style.color = "#2f2f2f";
-          li.style.breakInside = "avoid";
-          li.style.pageBreakInside = "avoid";
+          li.style.breakInside = "auto";
+          li.style.pageBreakInside = "auto";
     
           if (!li.querySelector(".pdfListNo")) {
             const num = document.createElement("span");
@@ -985,8 +985,8 @@
             orientation: "portrait"
           },
           pagebreak: {
-              mode: ["css", "legacy"],
-              avoid: [".sectionOpening", "#planMount .scoreBox", "#planMount li"]
+                mode: ["css", "legacy"],
+                avoid: [".sectionOpening", "#planMount .scoreBox"]
           }
         };
 
