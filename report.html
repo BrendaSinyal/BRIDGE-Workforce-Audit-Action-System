@@ -226,6 +226,24 @@
       cursor: not-allowed;
     }
 
+    .sectionOpening{
+      break-inside: avoid;
+      page-break-inside: avoid;
+      margin-bottom: 10px;
+    }
+    
+    .sectionOpening h4:not(.lensTitle){
+      break-inside: avoid;
+      page-break-inside: avoid;
+      break-after: avoid;
+      page-break-after: avoid;
+    }
+    
+    .sectionOpening p{
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    
     .pdf-avoid-break,
     .planInner img,
     .planInner table,
@@ -276,12 +294,7 @@
     .planInner .section{
       margin-bottom: 26px;
     }
-    
-    .planInner h4:not(.lensTitle){
-      margin-top: 28px !important;
-      margin-bottom: 18px !important;
-    }
-    
+      
     .planInner li{
       break-inside: avoid;
       page-break-inside: avoid;
@@ -859,6 +872,55 @@
         el.style.pageBreakInside = "auto";
       });
     }
+
+    function wrapSectionOpeningForPdf(root) {
+      if (!root) return;
+    
+      const sections = Array.from(root.querySelectorAll("#planMount .section"));
+    
+      sections.forEach(section => {
+        const h4 = section.querySelector("h4:not(.lensTitle)");
+        if (!h4) return;
+    
+        const wrapper = document.createElement("div");
+        wrapper.className = "sectionOpening";
+    
+        section.insertBefore(wrapper, h4);
+        wrapper.appendChild(h4);
+    
+        let next = wrapper.nextSibling;
+    
+        while (next) {
+          const current = next;
+          next = next.nextSibling;
+    
+          if (
+            current.nodeType === 1 &&
+            (
+              current.classList.contains("lensTitle") ||
+              current.classList.contains("lensIntro") ||
+              current.classList.contains("actionSub") ||
+              current.classList.contains("actionList") ||
+              current.tagName === "OL" ||
+              current.tagName === "UL" ||
+              current.tagName === "HR"
+            )
+          ) {
+            break;
+          }
+    
+          wrapper.appendChild(current);
+    
+          if (
+            current.nodeType === 1 &&
+            current.textContent &&
+            current.textContent.includes("Key Focus Areas")
+          ) {
+            break;
+          }
+        }
+      });
+    }
     
     async function downloadActionPlanPdf() {
       const btn = document.getElementById("btnDownloadPdf");
@@ -878,8 +940,9 @@
         btn.textContent = "Generating PDF...";
 
         const clone = target.cloneNode(true);
-
+        
         fixActionListNumbersForPdf(clone);
+        wrapSectionOpeningForPdf(clone);
         enhancePlanForPdf(clone);
         
         tempWrap = document.createElement("div");
@@ -922,7 +985,8 @@
             orientation: "portrait"
           },
           pagebreak: {
-            mode: ["css", "legacy"]
+              mode: ["css", "legacy"],
+              avoid: [".sectionOpening", "#planMount .scoreBox", "#planMount li"]
           }
         };
 
