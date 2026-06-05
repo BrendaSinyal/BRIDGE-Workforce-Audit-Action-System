@@ -224,7 +224,7 @@
       const rInner = rOuter - thickness;
 
       const needleCx = cx;
-      const needleCy = cy - (thickness * 0.60);
+      const needleCy = cy - (thickness * 0.30);
 
       const segSizes = [
         { label: "Critical", size: 40, color: "#e74c3c" },
@@ -298,7 +298,7 @@
       ctx.restore();
 
       const ang = scoreToAngle(score);
-      const needleLen = rInner + thickness * 0.26;
+      const needleLen = rInner + thickness * 0.20;
 
       const tip = polar(needleCx, needleCy, needleLen, ang);
       const back = polar(needleCx, needleCy, 18, ang + Math.PI);
