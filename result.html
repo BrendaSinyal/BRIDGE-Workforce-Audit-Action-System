@@ -217,7 +217,7 @@
       ctx.clearRect(0, 0, W, H);
 
       const cx = W / 2;
-      const cy = H * 0.60;
+      const cy = H * 0.52;
 
       const rOuter = Math.min(W * 0.40, H * 0.58);
       const thickness = Math.min(64, rOuter * 0.36);
@@ -320,7 +320,7 @@
       ctx.fillStyle = "#2f435c";
       ctx.fill();
 
-      const pctY = cy + 38;
+      const pctY = cy + (rInner * 0.28);
       ctx.fillStyle = "#0f2f6b";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
