@@ -224,7 +224,7 @@
       const rInner = rOuter - thickness;
 
       const needleCx = cx;
-      const needleCy = cy - (thickness * 0.30);
+      const needleCy = cy;
 
       const segSizes = [
         { label: "Critical", size: 40, color: "#e74c3c" },
@@ -320,7 +320,7 @@
       ctx.fillStyle = "#2f435c";
       ctx.fill();
 
-      const pctY = needleCy + 48;
+      const pctY = cy + 38;
       ctx.fillStyle = "#0f2f6b";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
