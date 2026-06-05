@@ -56,6 +56,35 @@
     .planCard { border: 1px solid #e7eef6; border-radius: 14px; padding: 0; overflow:hidden; background:#fff; }
     .planInner { padding: 14px 16px 18px; }
 
+    .overall {
+      margin-top: 18px;
+      padding: 14px 16px;
+      background: #f7fbff;
+      border: 1px solid #e7eef6;
+      border-radius: 12px;
+      text-align: center;
+      color: #0a2a5a;
+    }
+    
+    .overall .title {
+      font-size: 15px;
+      font-weight: 800;
+      margin-right: 6px;
+    }
+    
+    .overall .score {
+      font-size: 32px;
+      font-weight: 900;
+      color: #0f2f6b;
+      margin: 0 6px;
+    }
+    
+    .overall .label {
+      font-size: 18px;
+      font-weight: 800;
+      color: #1a7a4a;
+    }
+    
     .err { color:#b00020; margin: 10px 0 0; font-weight:700; }
   </style>
 </head>
@@ -114,13 +143,13 @@
         <div class="secVal" id="valEmp">—%</div>
       </div>
 
-      <div class="err" id="err"></div>
+      <div class="overall">
+      <span class="title">Overall Readiness Score:</span>
+      <span class="score" id="overallScore">—%</span>
+      <span class="label" id="overallLabel"></span>
     </div>
-
-    <div class="planWrap">
-      <div class="planCard">
-        <div id="planMount"></div>
-      </div>
+    
+    <div class="err" id="err"></div>
     </div>
   </div>
 
@@ -368,7 +397,7 @@
     function init() {
       const token = getParam("t");
       const errEl = document.getElementById("err");
-      const planMount = document.getElementById("planMount");
+      //const planMount = document.getElementById("planMount");
 
       if (!token) {
         errEl.textContent = "Missing parameter: ?t=";
@@ -401,6 +430,9 @@
 
           drawGauge(score, label);
 
+          document.getElementById("overallScore").textContent = `${Math.round(score)}%`;
+          document.getElementById("overallLabel").textContent = `${label} Readiness`;
+
           const sec = resp.section ?? resp.sections ?? {};
           setBar("barBuild", "valBuild", sec.build);
           setBar("barRec", "valRec", sec.recognise ?? sec.recognize);
@@ -408,7 +440,7 @@
           setBar("barDev", "valDev", sec.develop);
           setBar("barGui", "valGui", sec.guide);
           setBar("barEmp", "valEmp", sec.empower);
-
+          /*
           if (MAINTENANCE) {
             planMount.innerHTML = `
               <div class="planInner">
@@ -450,7 +482,7 @@
             } else {
               planMount.innerHTML = `<div class="planInner" style="color:#b00020;font-weight:700;">Missing planHtml.</div>`;
             }
-          }
+          } */
 
         } finally {
           try { delete window[cbName]; } catch (e) {}
