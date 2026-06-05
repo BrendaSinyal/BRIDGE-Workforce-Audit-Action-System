@@ -217,12 +217,12 @@
       ctx.clearRect(0, 0, W, H);
 
       const cx = W / 2;
-      const cy = H * 0.52;
+      const cy = H * 0.60;
 
       const rOuter = Math.min(W * 0.40, H * 0.58);
       const thickness = Math.min(64, rOuter * 0.36);
       const rInner = rOuter - thickness;
-
+      
       const needleCx = cx;
       const needleCy = cy - (thickness * 0.60);
 
@@ -298,18 +298,10 @@
       ctx.restore();
 
       const ang = scoreToAngle(score);
-      
-      /*
-        Target ujung needle dihitung berdasarkan pusat gauge asli: cx, cy.
-        Jadi 82% tetap jatuh di area High/hijau.
-      */
+
       const tipTargetR = rInner + thickness * 0.45;
       const tip = polar(cx, cy, tipTargetR, ang);
       
-      /*
-        Arah body needle dihitung dari pusat needle visual ke ujung target.
-        Jadi titik pusat needle tetap naik, tapi arah jarum benar.
-      */
       const needleAng = Math.atan2(tip.y - needleCy, tip.x - needleCx);
       
       const back = polar(needleCx, needleCy, 18, needleAng + Math.PI);
