@@ -17,8 +17,20 @@
     .left { flex: 1 1 520px; }
     .right { flex: 0 0 300px; }
 
-    #gauge { width: 100%; height: 330px; display:block; }
-
+    #gauge {
+	  width: 100%;
+	  height: 330px;
+	  display: block;
+	}
+	
+	#gauge svg {
+	  width: 100%;
+	  height: 100%;
+	  display: block;
+	  overflow: visible;
+	  text-rendering: geometricPrecision;
+	  shape-rendering: geometricPrecision;
+	}
     .legend { font-size: 14px; }
     .legItem { display:flex; align-items:center; gap:10px; margin: 8px 0; }
     .dot { width: 12px; height: 12px; border-radius: 50%; }
@@ -135,7 +147,7 @@
 
       <div class="row">
         <div class="left">
-          <canvas id="gauge"></canvas>
+          <div id="gauge" role="img" aria-label="B/RIDGE Workforce Readiness Gauge"></div>
         </div>
 
         <div class="right">
@@ -248,159 +260,234 @@
       return { x: cx + Math.cos(ang) * r, y: cy + Math.sin(ang) * r };
     }
 
+	function escHtml(value) {
+	  return String(value ?? "")
+	    .replaceAll("&", "&amp;")
+	    .replaceAll("<", "&lt;")
+	    .replaceAll(">", "&gt;")
+	    .replaceAll('"', "&quot;");
+	}
+	
+	function arcPoint(cx, cy, r, angle) {
+	  return {
+	    x: cx + Math.cos(angle) * r,
+	    y: cy + Math.sin(angle) * r
+	  };
+	}
+	
+	function ringSegmentPath(cx, cy, rOuter, rInner, a1, a2) {
+	  const p1 = arcPoint(cx, cy, rOuter, a1);
+	  const p2 = arcPoint(cx, cy, rOuter, a2);
+	  const p3 = arcPoint(cx, cy, rInner, a2);
+	  const p4 = arcPoint(cx, cy, rInner, a1);
+	  const largeArc = (a2 - a1) > Math.PI ? 1 : 0;
+	
+	  return `
+	    M ${p1.x} ${p1.y}
+	    A ${rOuter} ${rOuter} 0 ${largeArc} 1 ${p2.x} ${p2.y}
+	    L ${p3.x} ${p3.y}
+	    A ${rInner} ${rInner} 0 ${largeArc} 0 ${p4.x} ${p4.y}
+	    Z
+	  `;
+	}
+	
+	function arcLinePath(cx, cy, r, a1, a2) {
+	  const p1 = arcPoint(cx, cy, r, a1);
+	  const p2 = arcPoint(cx, cy, r, a2);
+	  const largeArc = (a2 - a1) > Math.PI ? 1 : 0;
+	
+	  return `M ${p1.x} ${p1.y} A ${r} ${r} 0 ${largeArc} 1 ${p2.x} ${p2.y}`;
+	}
+
     function drawGauge(score, label) {
-      const canvas = document.getElementById("gauge");
-      resizeCanvas(canvas);
-      const ctx = canvas.getContext("2d");
-
-      const W = canvas.clientWidth;
-      const H = canvas.clientHeight;
-      ctx.clearRect(0, 0, W, H);
-
-      const cx = W / 2;
-      const cy = H * 0.60;
-
-      const rOuter = Math.min(W * 0.40, H * 0.58);
-      const thickness = Math.min(64, rOuter * 0.36);
-      const rInner = rOuter - thickness;
-      
-      const needleCx = cx;
-      const needleCy = cy - (thickness * 0.60);
-
-      const segSizes = [
-        { label: "Critical", size: 40, color: "#e74c3c" },
-        { label: "Low", size: 20, color: "#f39c12" },
-        { label: "Moderate", size: 20, color: "#f1c40f" },
-        { label: "High", size: 20, color: "#2ecc71" },
-      ];
-
-      let currentAngle = Math.PI;
-
-      segSizes.forEach(seg => {
-        const span = (seg.size / 100) * Math.PI;
-        const a1 = currentAngle;
-        const a2 = currentAngle + span;
-
-        ctx.beginPath();
-        ctx.arc(cx, cy, rOuter, a1, a2, false);
-        ctx.arc(cx, cy, rInner, a2, a1, true);
-        ctx.closePath();
-        ctx.fillStyle = seg.color;
-        ctx.fill();
-
-        currentAngle = a2;
-      });
-
-      const boundaries = [
-        Math.PI + 0.40 * Math.PI,
-        Math.PI + 0.60 * Math.PI,
-        Math.PI + 0.80 * Math.PI
-      ];
-
-      ctx.save();
-      ctx.strokeStyle = "#ffffff";
-      ctx.lineWidth = 4;
-      boundaries.forEach(a => {
-        const p1 = polar(cx, cy, rOuter, a);
-        const p2 = polar(cx, cy, rInner, a);
-        ctx.beginPath();
-        ctx.moveTo(p1.x, p1.y);
-        ctx.lineTo(p2.x, p2.y);
-        ctx.stroke();
-      });
-      ctx.restore();
-
-      ctx.save();
-      ctx.strokeStyle = "#cfd6dc";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(cx, cy, rOuter, Math.PI, 2 * Math.PI, false);
-      ctx.stroke();
-      ctx.restore();
-
-      ctx.save();
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillStyle = "#ffffff";
-      ctx.font = `800 ${Math.max(10, Math.min(14, W * 0.022))}px Arial`;
-
-      const ringTextR = rInner + (thickness * 0.52);
-      const labelAngles = [
-        { text: "Critical", angle: Math.PI + (0.20 * Math.PI) },
-        { text: "Low", angle: Math.PI + (0.50 * Math.PI) },
-        { text: "Moderate", angle: Math.PI + (0.70 * Math.PI) },
-        { text: "High", angle: Math.PI + (0.90 * Math.PI) },
-      ];
-
-      labelAngles.forEach(l => {
-        const p = polar(cx, cy, ringTextR, l.angle);
-        ctx.fillText(l.text, p.x, p.y);
-      });
-      ctx.restore();
-
-      const ang = scoreToAngle(score);
-
-      const tipTargetR = rInner + thickness * 0.45;
-      const tip = polar(cx, cy, tipTargetR, ang);
-      
-      const needleAng = Math.atan2(tip.y - needleCy, tip.x - needleCx);
-      
-      const back = polar(needleCx, needleCy, 18, needleAng + Math.PI);
-      const perp = needleAng + Math.PI / 2;
-      const left = polar(needleCx, needleCy, 8, perp);
-      const right = polar(needleCx, needleCy, 8, perp + Math.PI);
-
-      ctx.fillStyle = "#2f435c";
-      ctx.beginPath();
-      ctx.moveTo(tip.x, tip.y);
-      ctx.lineTo(left.x, left.y);
-      ctx.lineTo(back.x, back.y);
-      ctx.lineTo(right.x, right.y);
-      ctx.closePath();
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.arc(needleCx, needleCy, 14, 0, Math.PI * 2);
-      ctx.fillStyle = "#2f435c";
-      ctx.fill();
-
-      const pctY = needleCy + 44;
-      ctx.fillStyle = "#0f2f6b";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.font = `900 ${Math.max(38, Math.min(54, W * 0.09))}px Arial`;
-      ctx.fillText(`${Math.round(score)}%`, cx, pctY);
-
-      const lbl = String(label ?? scoreToLabel(score)).trim();
-
-      const pillW = Math.min(300, W * 0.56);
-      const pillH = 36;
-      const pillX = cx - pillW / 2;
-      const pillY = pctY + 22;
-
-      const pillBg =
-        lbl === "High" ? "#e8f7ef" :
-        lbl === "Moderate" ? "#fff4d8" :
-        lbl === "Low" ? "#fde7d6" :
-        "#ffe1e1";
-
-      const pillText =
-        lbl === "High" ? "#1a7a4a" :
-        lbl === "Moderate" ? "#9a6a00" :
-        lbl === "Low" ? "#c96a1b" :
-        "#a10f0f";
-
-      ctx.fillStyle = pillBg;
-      roundedRect(ctx, pillX, pillY, pillW, pillH, 24);
-      ctx.fill();
-
-      const lblFont = Math.max(13, Math.min(17, W * 0.028));
-      ctx.fillStyle = pillText;
-      ctx.font = `800 ${lblFont}px Arial`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(`${lbl} Readiness`, cx, pillY + pillH / 2);
-    }
+	  const gauge = document.getElementById("gauge");
+	
+	  const W = gauge.clientWidth || 520;
+	  const H = gauge.clientHeight || 330;
+	
+	  const cx = W / 2;
+	  const cy = H * 0.60;
+	
+	  const rOuter = Math.min(W * 0.40, H * 0.58);
+	  const thickness = Math.min(64, rOuter * 0.36);
+	  const rInner = rOuter - thickness;
+	
+	  const needleCx = cx;
+	  const needleCy = cy - (thickness * 0.60);
+	
+	  const segSizes = [
+	    { label: "Critical", size: 40, color: "#e74c3c" },
+	    { label: "Low", size: 20, color: "#f39c12" },
+	    { label: "Moderate", size: 20, color: "#f1c40f" },
+	    { label: "High", size: 20, color: "#2ecc71" },
+	  ];
+	
+	  let currentAngle = Math.PI;
+	  let segmentsSvg = "";
+	
+	  segSizes.forEach(seg => {
+	    const span = (seg.size / 100) * Math.PI;
+	    const a1 = currentAngle;
+	    const a2 = currentAngle + span;
+	
+	    segmentsSvg += `
+	      <path
+	        d="${ringSegmentPath(cx, cy, rOuter, rInner, a1, a2)}"
+	        fill="${seg.color}"
+	      />
+	    `;
+	
+	    currentAngle = a2;
+	  });
+	
+	  const boundaries = [
+	    Math.PI + 0.40 * Math.PI,
+	    Math.PI + 0.60 * Math.PI,
+	    Math.PI + 0.80 * Math.PI
+	  ];
+	
+	  const boundariesSvg = boundaries.map(a => {
+	    const p1 = arcPoint(cx, cy, rOuter, a);
+	    const p2 = arcPoint(cx, cy, rInner, a);
+	
+	    return `
+	      <line
+	        x1="${p1.x}" y1="${p1.y}"
+	        x2="${p2.x}" y2="${p2.y}"
+	        stroke="#ffffff"
+	        stroke-width="4"
+	        stroke-linecap="round"
+	      />
+	    `;
+	  }).join("");
+	
+	  const labelFont = Math.max(10, Math.min(14, W * 0.022));
+	  const ringTextR = rInner + (thickness * 0.52);
+	
+	  const labelAngles = [
+	    { text: "Critical", angle: Math.PI + (0.20 * Math.PI) },
+	    { text: "Low", angle: Math.PI + (0.50 * Math.PI) },
+	    { text: "Moderate", angle: Math.PI + (0.70 * Math.PI) },
+	    { text: "High", angle: Math.PI + (0.90 * Math.PI) },
+	  ];
+	
+	  const labelsSvg = labelAngles.map(l => {
+	    const p = arcPoint(cx, cy, ringTextR, l.angle);
+	
+	    return `
+	      <text
+	        x="${p.x}"
+	        y="${p.y}"
+	        text-anchor="middle"
+	        dominant-baseline="middle"
+	        fill="#ffffff"
+	        font-size="${labelFont}"
+	        font-weight="800"
+	      >${escHtml(l.text)}</text>
+	    `;
+	  }).join("");
+	
+	  const ang = scoreToAngle(score);
+	  const tipTargetR = rInner + thickness * 0.45;
+	  const tip = arcPoint(cx, cy, tipTargetR, ang);
+	
+	  const needleAng = Math.atan2(tip.y - needleCy, tip.x - needleCx);
+	
+	  const back = arcPoint(needleCx, needleCy, 18, needleAng + Math.PI);
+	  const perp = needleAng + Math.PI / 2;
+	  const left = arcPoint(needleCx, needleCy, 8, perp);
+	  const right = arcPoint(needleCx, needleCy, 8, perp + Math.PI);
+	
+	  const pctY = needleCy + 44;
+	  const pctFont = Math.max(38, Math.min(54, W * 0.09));
+	
+	  const lbl = String(label ?? scoreToLabel(score)).trim();
+	
+	  const pillW = Math.min(300, W * 0.56);
+	  const pillH = 36;
+	  const pillX = cx - pillW / 2;
+	  const pillY = pctY + 22;
+	
+	  const pillBg =
+	    lbl === "High" ? "#e8f7ef" :
+	    lbl === "Moderate" ? "#fff4d8" :
+	    lbl === "Low" ? "#fde7d6" :
+	    "#ffe1e1";
+	
+	  const pillText =
+	    lbl === "High" ? "#1a7a4a" :
+	    lbl === "Moderate" ? "#9a6a00" :
+	    lbl === "Low" ? "#c96a1b" :
+	    "#a10f0f";
+	
+	  const lblFont = Math.max(13, Math.min(17, W * 0.028));
+	
+	  gauge.innerHTML = `
+	    <svg
+	      xmlns="http://www.w3.org/2000/svg"
+	      viewBox="0 0 ${W} ${H}"
+	      width="${W}"
+	      height="${H}"
+	      preserveAspectRatio="xMidYMid meet"
+	      style="font-family: Arial, Helvetica, sans-serif;"
+	    >
+	      ${segmentsSvg}
+	
+	      ${boundariesSvg}
+	
+	      <path
+	        d="${arcLinePath(cx, cy, rOuter, Math.PI, 2 * Math.PI)}"
+	        fill="none"
+	        stroke="#cfd6dc"
+	        stroke-width="2"
+	      />
+	
+	      ${labelsSvg}
+	
+	      <polygon
+	        points="${tip.x},${tip.y} ${left.x},${left.y} ${back.x},${back.y} ${right.x},${right.y}"
+	        fill="#2f435c"
+	      />
+	
+	      <circle
+	        cx="${needleCx}"
+	        cy="${needleCy}"
+	        r="14"
+	        fill="#2f435c"
+	      />
+	
+	      <text
+	        x="${cx}"
+	        y="${pctY}"
+	        text-anchor="middle"
+	        dominant-baseline="middle"
+	        fill="#0f2f6b"
+	        font-size="${pctFont}"
+	        font-weight="900"
+	      >${Math.round(score)}%</text>
+	
+	      <rect
+	        x="${pillX}"
+	        y="${pillY}"
+	        width="${pillW}"
+	        height="${pillH}"
+	        rx="24"
+	        ry="24"
+	        fill="${pillBg}"
+	      />
+	
+	      <text
+	        x="${cx}"
+	        y="${pillY + pillH / 2}"
+	        text-anchor="middle"
+	        dominant-baseline="middle"
+	        fill="${pillText}"
+	        font-size="${lblFont}"
+	        font-weight="800"
+	      >${escHtml(lbl)} Readiness</text>
+	    </svg>
+	  `;
+	}
 
     function classByScore(score) {
       const s = Number(score);
@@ -458,26 +545,21 @@
 	    drawGauge(currentScore, currentLabel);
 	    await new Promise(resolve => setTimeout(resolve, 300));
 	
-	    // ambil canvas gauge asli sebagai image
-	    const originalCanvas = document.getElementById("gauge");
-	    const gaugeImageData = originalCanvas.toDataURL("image/png");
-	
 	    const clone = card.cloneNode(true);
-	
-	    // hapus tombol dari PDF
-	    clone.querySelectorAll(".noPdf").forEach(el => el.remove());
-	
-	    // replace canvas di clone dengan image
-	    const clonedCanvas = clone.querySelector("#gauge");
-	    if (clonedCanvas) {
-	      const img = document.createElement("img");
-	      img.src = gaugeImageData;
-	      img.style.width = "100%";
-	      img.style.height = "330px";
-	      img.style.objectFit = "contain";
-	      img.style.display = "block";
-	      clonedCanvas.replaceWith(img);
-	    }
+
+		// hapus tombol dari PDF
+		clone.querySelectorAll(".noPdf").forEach(el => el.remove());
+		
+		// pastikan SVG gauge ikut masuk ke clone
+		const originalGauge = document.getElementById("gauge");
+		const clonedGauge = clone.querySelector("#gauge");
+		
+		if (originalGauge && clonedGauge) {
+		  clonedGauge.innerHTML = originalGauge.innerHTML;
+		  clonedGauge.style.width = "100%";
+		  clonedGauge.style.height = "330px";
+		  clonedGauge.style.display = "block";
+		}
 	
 	    // pastikan overall benar
 	    const overallScore = clone.querySelector("#overallScore");
@@ -535,7 +617,7 @@
 	    await new Promise(resolve => setTimeout(resolve, 500));
 	
 	    const canvas = await html2canvas(tempWrap, {
-	      scale: 2,
+	      scale: 3,
 	      useCORS: true,
 	      backgroundColor: "#ffffff",
 	      scrollX: 0,
