@@ -440,76 +440,94 @@
 	async function downloadResultPdf() {
 	  const btn = document.getElementById("downloadPdfBtn");
 	  const card = document.querySelector(".card");
-
+	
 	  if (!card) return;
-
+	
 	  if (currentScore === null) {
-		alert("Result data is still loading. Please wait.");
-		return;
+	    alert("Result data is still loading. Please wait.");
+	    return;
 	  }
-
+	
 	  try {
-		btn.disabled = true;
-		btn.textContent = "Preparing PDF...";
-
-		drawGauge(currentScore, currentLabel);
-		await new Promise(resolve => setTimeout(resolve, 300));
-
-		const clone = card.cloneNode(true);
-
-		clone.querySelectorAll(".noPdf").forEach(el => el.remove());
-
-		clone.style.border = "0";
-		clone.style.borderRadius = "0";
-		clone.style.boxShadow = "none";
-		clone.style.padding = "12px";
-		clone.style.width = "760px";
-		clone.style.maxWidth = "760px";
-		clone.style.background = "#ffffff";
-
-		const tempWrap = document.createElement("div");
-		tempWrap.style.position = "fixed";
-		tempWrap.style.left = "-9999px";
-		tempWrap.style.top = "0";
-		tempWrap.style.background = "#ffffff";
-		tempWrap.appendChild(clone);
-		document.body.appendChild(tempWrap);
-
-		const scoreText = currentScore !== null ? Math.round(currentScore) : "result";
-		const labelText = String(currentLabel || "Readiness").replace(/\s+/g, "-");
-
-		const opt = {
-		  margin: [10, 10, 10, 10],
-		  filename: `BRIDGE_Workforce_Readiness_${labelText}_${scoreText}.pdf`,
-		  image: {
-			type: "jpeg",
-			quality: 0.98
-		  },
-		  html2canvas: {
-			scale: 2,
-			useCORS: true,
-			backgroundColor: "#ffffff"
-		  },
-		  jsPDF: {
-			unit: "mm",
-			format: "a4",
-			orientation: "portrait"
-		  },
-		  pagebreak: {
-			mode: ["css", "legacy"]
-		  }
-		};
-
-		await html2pdf().set(opt).from(clone).save();
-
-		document.body.removeChild(tempWrap);
-
+	    btn.disabled = true;
+	    btn.textContent = "Preparing PDF...";
+	
+	    // redraw gauge asli dulu
+	    drawGauge(currentScore, currentLabel);
+	    await new Promise(resolve => setTimeout(resolve, 300));
+	
+	    const originalCanvas = document.getElementById("gauge");
+	    const gaugeImageData = originalCanvas.toDataURL("image/png");
+	
+	    const clone = card.cloneNode(true);
+	
+	    // hapus tombol dari PDF
+	    clone.querySelectorAll(".noPdf").forEach(el => el.remove());
+	
+	    // replace canvas clone dengan image supaya gauge ikut masuk PDF
+	    const clonedCanvas = clone.querySelector("#gauge");
+	    if (clonedCanvas) {
+	      const img = document.createElement("img");
+	      img.src = gaugeImageData;
+	      img.style.width = "100%";
+	      img.style.height = "330px";
+	      img.style.objectFit = "contain";
+	      img.style.display = "block";
+	      clonedCanvas.replaceWith(img);
+	    }
+	
+	    clone.style.border = "0";
+	    clone.style.borderRadius = "0";
+	    clone.style.boxShadow = "none";
+	    clone.style.padding = "12px";
+	    clone.style.width = "760px";
+	    clone.style.maxWidth = "760px";
+	    clone.style.background = "#ffffff";
+	
+	    const tempWrap = document.createElement("div");
+	    tempWrap.style.position = "fixed";
+	    tempWrap.style.left = "-9999px";
+	    tempWrap.style.top = "0";
+	    tempWrap.style.background = "#ffffff";
+	    tempWrap.style.width = "760px";
+	    tempWrap.appendChild(clone);
+	    document.body.appendChild(tempWrap);
+	
+	    const scoreText = currentScore !== null ? Math.round(currentScore) : "result";
+	    const labelText = String(currentLabel || "Readiness").replace(/\s+/g, "-");
+	
+	    const opt = {
+	      margin: [8, 10, 8, 10],
+	      filename: `BRIDGE_Workforce_Readiness_${labelText}_${scoreText}.pdf`,
+	      image: {
+	        type: "jpeg",
+	        quality: 0.98
+	      },
+	      html2canvas: {
+	        scale: 2,
+	        useCORS: true,
+	        backgroundColor: "#ffffff"
+	      },
+	      jsPDF: {
+	        unit: "mm",
+	        format: "a4",
+	        orientation: "portrait"
+	      },
+	      pagebreak: {
+	        mode: ["css", "legacy"]
+	      }
+	    };
+	
+	    await html2pdf().set(opt).from(clone).save();
+	
+	    document.body.removeChild(tempWrap);
+	
 	  } catch (err) {
-		console.error(err);
-		alert("Failed to generate PDF. Please try again.");
+	    console.error(err);
+	    alert("Failed to generate PDF. Please try again.");
 	  } finally {
-		btn.disabled = false;
-		btn.textContent = "Download PDF";
+	    btn.disabled = false;
+	    btn.textContent = "Download PDF";
 	  }
 	}
 
