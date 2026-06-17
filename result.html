@@ -517,15 +517,17 @@
 	    }
 	
 	    const tempWrap = document.createElement("div");
-	    tempWrap.style.position = "fixed";
-	    tempWrap.style.left = "-9999px";
-	    tempWrap.style.top = "0";
-	    tempWrap.style.background = "#ffffff";
-	    tempWrap.style.width = "1060px";
-	    tempWrap.style.padding = "24px 40px";
-	    tempWrap.style.boxSizing = "border-box";
-	    tempWrap.appendChild(clone);
-	    document.body.appendChild(tempWrap);
+		tempWrap.style.position = "absolute";
+		tempWrap.style.left = "0";
+		tempWrap.style.top = "0";
+		tempWrap.style.background = "#ffffff";
+		tempWrap.style.width = "1060px";
+		tempWrap.style.padding = "24px 40px";
+		tempWrap.style.boxSizing = "border-box";
+		tempWrap.style.zIndex = "-1";
+		tempWrap.style.pointerEvents = "none";
+		tempWrap.appendChild(clone);
+		document.body.appendChild(tempWrap);
 	
 	    const scoreText = Math.round(currentScore);
 	    const labelText = String(currentLabel || "Readiness").replace(/\s+/g, "-");
