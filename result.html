@@ -440,6 +440,7 @@
 	async function downloadResultPdf() {
 	  const btn = document.getElementById("downloadPdfBtn");
 	  const card = document.querySelector(".card");
+	  let tempWrap = null;
 	
 	  if (!card) return;
 	
@@ -497,7 +498,7 @@
 	    clone.style.boxSizing = "border-box";
 	    clone.style.margin = "0 auto";
 	
-	    // jangan ubah .row jadi block, supaya tetap seperti web
+	    // pertahankan layout web
 	    const row = clone.querySelector(".row");
 	    if (row) {
 	      row.style.display = "flex";
@@ -516,18 +517,17 @@
 	      right.style.flex = "0 0 300px";
 	    }
 	
-	    const tempWrap = document.createElement("div");
-		tempWrap.style.position = "absolute";
-		tempWrap.style.left = "0";
-		tempWrap.style.top = "0";
-		tempWrap.style.background = "#ffffff";
-		tempWrap.style.width = "1060px";
-		tempWrap.style.padding = "24px 40px";
-		tempWrap.style.boxSizing = "border-box";
-		tempWrap.style.zIndex = "-1";
-		tempWrap.style.pointerEvents = "none";
-		tempWrap.appendChild(clone);
-		document.body.appendChild(tempWrap);
+	    tempWrap = document.createElement("div");
+	    tempWrap.style.position = "absolute";
+	    tempWrap.style.left = "0";
+	    tempWrap.style.top = "0";
+	    tempWrap.style.background = "#ffffff";
+	    tempWrap.style.width = "1060px";
+	    tempWrap.style.padding = "24px 40px";
+	    tempWrap.style.boxSizing = "border-box";
+	    tempWrap.style.zIndex = "9999";
+	    tempWrap.appendChild(clone);
+	    document.body.appendChild(tempWrap);
 	
 	    const scoreText = Math.round(currentScore);
 	    const labelText = String(currentLabel || "Readiness").replace(/\s+/g, "-");
@@ -560,12 +560,14 @@
 	
 	    await html2pdf().set(opt).from(tempWrap).save();
 	
-	    document.body.removeChild(tempWrap);
-	
 	  } catch (err) {
 	    console.error(err);
 	    alert("Failed to generate PDF. Please try again.");
 	  } finally {
+	    if (tempWrap && tempWrap.parentNode) {
+	      tempWrap.parentNode.removeChild(tempWrap);
+	    }
+	
 	    btn.disabled = false;
 	    btn.textContent = "Download PDF";
 	  }
