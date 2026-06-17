@@ -85,6 +85,38 @@
       color: #1a7a4a;
     }
     
+	.actions {
+	  display: flex;
+	  justify-content: flex-end;
+	  margin: 12px 0 4px;
+	}
+
+	.downloadBtn {
+	  border: 0;
+	  background: #0a4aa6;
+	  color: #fff;
+	  font-weight: 800;
+	  font-size: 14px;
+	  padding: 10px 16px;
+	  border-radius: 999px;
+	  cursor: pointer;
+	  box-shadow: 0 2px 8px rgba(10,74,166,.22);
+	}
+
+	.downloadBtn:hover {
+	  background: #083b85;
+	}
+
+	.downloadBtn:disabled {
+	  background: #9fb6d8;
+	  cursor: not-allowed;
+	  box-shadow: none;
+	}
+
+	.noPdf {
+	  display: block;
+	}
+	
     .err { color:#b00020; margin: 10px 0 0; font-weight:700; }
   </style>
 </head>
@@ -94,6 +126,12 @@
     <div class="card">
       <h1>B/RIDGE™ Workforce Readiness Assessment</h1>
       <div class="topline"></div>
+			
+		<div class="actions noPdf">
+		  <button id="downloadPdfBtn" class="downloadBtn" type="button" disabled>
+			Download PDF
+		  </button>
+		</div>
 
       <div class="row">
         <div class="left">
@@ -153,6 +191,8 @@
     </div>
   </div>
 
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+	
   <script>
     const LOGO_URL = "./assets/bridge-logo.png";
     const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxawEyd4imKhL--Y995FMk8KYZGH1oo7G6ylqr0XRJWrpQlpSN3-aOBjQv-Cy1HCkdk/exec";
@@ -396,6 +436,82 @@
       const body = extractBodyInner(stripStyles(html));
       return { styles, body };
     }
+	
+	async function downloadResultPdf() {
+	  const btn = document.getElementById("downloadPdfBtn");
+	  const card = document.querySelector(".card");
+
+	  if (!card) return;
+
+	  if (currentScore === null) {
+		alert("Result data is still loading. Please wait.");
+		return;
+	  }
+
+	  try {
+		btn.disabled = true;
+		btn.textContent = "Preparing PDF...";
+
+		drawGauge(currentScore, currentLabel);
+		await new Promise(resolve => setTimeout(resolve, 300));
+
+		const clone = card.cloneNode(true);
+
+		clone.querySelectorAll(".noPdf").forEach(el => el.remove());
+
+		clone.style.border = "0";
+		clone.style.borderRadius = "0";
+		clone.style.boxShadow = "none";
+		clone.style.padding = "12px";
+		clone.style.width = "760px";
+		clone.style.maxWidth = "760px";
+		clone.style.background = "#ffffff";
+
+		const tempWrap = document.createElement("div");
+		tempWrap.style.position = "fixed";
+		tempWrap.style.left = "-9999px";
+		tempWrap.style.top = "0";
+		tempWrap.style.background = "#ffffff";
+		tempWrap.appendChild(clone);
+		document.body.appendChild(tempWrap);
+
+		const scoreText = currentScore !== null ? Math.round(currentScore) : "result";
+		const labelText = String(currentLabel || "Readiness").replace(/\s+/g, "-");
+
+		const opt = {
+		  margin: [10, 10, 10, 10],
+		  filename: `BRIDGE_Workforce_Readiness_${labelText}_${scoreText}.pdf`,
+		  image: {
+			type: "jpeg",
+			quality: 0.98
+		  },
+		  html2canvas: {
+			scale: 2,
+			useCORS: true,
+			backgroundColor: "#ffffff"
+		  },
+		  jsPDF: {
+			unit: "mm",
+			format: "a4",
+			orientation: "portrait"
+		  },
+		  pagebreak: {
+			mode: ["css", "legacy"]
+		  }
+		};
+
+		await html2pdf().set(opt).from(clone).save();
+
+		document.body.removeChild(tempWrap);
+
+	  } catch (err) {
+		console.error(err);
+		alert("Failed to generate PDF. Please try again.");
+	  } finally {
+		btn.disabled = false;
+		btn.textContent = "Download PDF";
+	  }
+	}
 
     function init() {
       const token = getParam("t");
@@ -443,6 +559,8 @@
           setBar("barDev", "valDev", sec.develop);
           setBar("barGui", "valGui", sec.guide);
           setBar("barEmp", "valEmp", sec.empower);
+		  
+		  document.getElementById("downloadPdfBtn").disabled = false;
           /*
           if (MAINTENANCE) {
             planMount.innerHTML = `
@@ -503,6 +621,8 @@
     window.addEventListener("resize", () => {
       if (currentScore !== null) drawGauge(currentScore, currentLabel);
     });
+	
+	document.getElementById("downloadPdfBtn").addEventListener("click", downloadResultPdf);
 
     init();
   </script>
