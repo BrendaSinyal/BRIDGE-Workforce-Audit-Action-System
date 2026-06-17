@@ -191,7 +191,8 @@
     </div>
   </div>
 
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 	
   <script>
     const LOGO_URL = "./assets/bridge-logo.png";
@@ -457,15 +458,16 @@
 	    drawGauge(currentScore, currentLabel);
 	    await new Promise(resolve => setTimeout(resolve, 300));
 	
+	    // ambil canvas gauge asli sebagai image
 	    const originalCanvas = document.getElementById("gauge");
 	    const gaugeImageData = originalCanvas.toDataURL("image/png");
 	
 	    const clone = card.cloneNode(true);
 	
-	    // hapus tombol download dari PDF
+	    // hapus tombol dari PDF
 	    clone.querySelectorAll(".noPdf").forEach(el => el.remove());
 	
-	    // replace canvas clone dengan image supaya gauge ikut masuk PDF
+	    // replace canvas di clone dengan image
 	    const clonedCanvas = clone.querySelector("#gauge");
 	    if (clonedCanvas) {
 	      const img = document.createElement("img");
@@ -477,7 +479,7 @@
 	      clonedCanvas.replaceWith(img);
 	    }
 	
-	    // pastikan overall tetap ada dan nilainya benar
+	    // pastikan overall benar
 	    const overallScore = clone.querySelector("#overallScore");
 	    if (overallScore) {
 	      overallScore.textContent = `${Math.round(currentScore)}%`;
@@ -488,7 +490,7 @@
 	      overallLabel.textContent = `${currentLabel} Readiness`;
 	    }
 	
-	    // layout PDF dibuat sama seperti web
+	    // layout sama seperti web
 	    clone.style.width = "980px";
 	    clone.style.maxWidth = "980px";
 	    clone.style.border = "1px solid #e7eef6";
@@ -498,7 +500,6 @@
 	    clone.style.boxSizing = "border-box";
 	    clone.style.margin = "0 auto";
 	
-	    // pertahankan layout web
 	    const row = clone.querySelector(".row");
 	    if (row) {
 	      row.style.display = "flex";
@@ -517,48 +518,59 @@
 	      right.style.flex = "0 0 300px";
 	    }
 	
+	    // bungkus clone agar bisa dicapture
 	    tempWrap = document.createElement("div");
 	    tempWrap.style.position = "absolute";
 	    tempWrap.style.left = "0";
-	    tempWrap.style.top = "0";
-	    tempWrap.style.background = "#ffffff";
+	    tempWrap.style.top = `${window.scrollY}px`;
 	    tempWrap.style.width = "1060px";
 	    tempWrap.style.padding = "24px 40px";
+	    tempWrap.style.background = "#ffffff";
 	    tempWrap.style.boxSizing = "border-box";
-	    tempWrap.style.zIndex = "9999";
+	    tempWrap.style.zIndex = "999999";
 	    tempWrap.appendChild(clone);
 	    document.body.appendChild(tempWrap);
+	
+	    // tunggu render
+	    await new Promise(resolve => setTimeout(resolve, 500));
+	
+	    const canvas = await html2canvas(tempWrap, {
+	      scale: 2,
+	      useCORS: true,
+	      backgroundColor: "#ffffff",
+	      scrollX: 0,
+	      scrollY: -window.scrollY,
+	      windowWidth: 1100
+	    });
+	
+	    const imgData = canvas.toDataURL("image/png");
+	
+	    const { jsPDF } = window.jspdf;
+	    const pdf = new jsPDF("landscape", "mm", "a4");
+	
+	    const pageW = pdf.internal.pageSize.getWidth();
+	    const pageH = pdf.internal.pageSize.getHeight();
+	
+	    const margin = 8;
+	    const maxW = pageW - margin * 2;
+	    const maxH = pageH - margin * 2;
+	
+	    const imgW = canvas.width;
+	    const imgH = canvas.height;
+	    const ratio = Math.min(maxW / imgW, maxH / imgH);
+	
+	    const renderW = imgW * ratio;
+	    const renderH = imgH * ratio;
+	
+	    const x = (pageW - renderW) / 2;
+	    const y = (pageH - renderH) / 2;
+	
+	    pdf.addImage(imgData, "PNG", x, y, renderW, renderH);
 	
 	    const scoreText = Math.round(currentScore);
 	    const labelText = String(currentLabel || "Readiness").replace(/\s+/g, "-");
 	
-	    const opt = {
-	      margin: [8, 8, 8, 8],
-	      filename: `BRIDGE_Workforce_Readiness_${labelText}_${scoreText}.pdf`,
-	      image: {
-	        type: "jpeg",
-	        quality: 0.98
-	      },
-	      html2canvas: {
-	        scale: 2,
-	        useCORS: true,
-	        backgroundColor: "#ffffff",
-	        scrollX: 0,
-	        scrollY: 0,
-	        windowWidth: 1100
-	      },
-	      jsPDF: {
-	        unit: "mm",
-	        format: "a4",
-	        orientation: "landscape"
-	      },
-	      pagebreak: {
-	        mode: ["css", "legacy"],
-	        avoid: [".overall", ".section", ".row"]
-	      }
-	    };
-	
-	    await html2pdf().set(opt).from(tempWrap).save();
+	    pdf.save(`BRIDGE_Workforce_Readiness_${labelText}_${scoreText}.pdf`);
 	
 	  } catch (err) {
 	    console.error(err);
