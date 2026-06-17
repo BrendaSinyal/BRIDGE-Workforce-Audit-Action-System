@@ -461,7 +461,7 @@
 	
 	    const clone = card.cloneNode(true);
 	
-	    // hapus tombol dari PDF
+	    // hapus tombol download dari PDF
 	    clone.querySelectorAll(".noPdf").forEach(el => el.remove());
 	
 	    // replace canvas clone dengan image supaya gauge ikut masuk PDF
@@ -476,28 +476,62 @@
 	      clonedCanvas.replaceWith(img);
 	    }
 	
-	    clone.style.border = "0";
-	    clone.style.borderRadius = "0";
-	    clone.style.boxShadow = "none";
-	    clone.style.padding = "12px";
-	    clone.style.width = "760px";
-	    clone.style.maxWidth = "760px";
+	    // pastikan overall tetap ada dan nilainya benar
+	    const overallScore = clone.querySelector("#overallScore");
+	    if (overallScore) {
+	      overallScore.textContent = `${Math.round(currentScore)}%`;
+	    }
+	
+	    const overallLabel = clone.querySelector("#overallLabel");
+	    if (overallLabel) {
+	      overallLabel.textContent = `${currentLabel} Readiness`;
+	    }
+	
+	    // layout PDF dibuat sama seperti web
+	    clone.style.width = "980px";
+	    clone.style.maxWidth = "980px";
+	    clone.style.border = "1px solid #e7eef6";
+	    clone.style.borderRadius = "14px";
+	    clone.style.padding = "16px 16px 18px";
 	    clone.style.background = "#ffffff";
+	    clone.style.boxSizing = "border-box";
+	    clone.style.margin = "0 auto";
+	
+	    // jangan ubah .row jadi block, supaya tetap seperti web
+	    const row = clone.querySelector(".row");
+	    if (row) {
+	      row.style.display = "flex";
+	      row.style.gap = "18px";
+	      row.style.alignItems = "flex-start";
+	      row.style.flexWrap = "wrap";
+	    }
+	
+	    const left = clone.querySelector(".left");
+	    if (left) {
+	      left.style.flex = "1 1 520px";
+	    }
+	
+	    const right = clone.querySelector(".right");
+	    if (right) {
+	      right.style.flex = "0 0 300px";
+	    }
 	
 	    const tempWrap = document.createElement("div");
 	    tempWrap.style.position = "fixed";
 	    tempWrap.style.left = "-9999px";
 	    tempWrap.style.top = "0";
 	    tempWrap.style.background = "#ffffff";
-	    tempWrap.style.width = "760px";
+	    tempWrap.style.width = "1060px";
+	    tempWrap.style.padding = "24px 40px";
+	    tempWrap.style.boxSizing = "border-box";
 	    tempWrap.appendChild(clone);
 	    document.body.appendChild(tempWrap);
 	
-	    const scoreText = currentScore !== null ? Math.round(currentScore) : "result";
+	    const scoreText = Math.round(currentScore);
 	    const labelText = String(currentLabel || "Readiness").replace(/\s+/g, "-");
 	
 	    const opt = {
-	      margin: [8, 10, 8, 10],
+	      margin: [8, 8, 8, 8],
 	      filename: `BRIDGE_Workforce_Readiness_${labelText}_${scoreText}.pdf`,
 	      image: {
 	        type: "jpeg",
@@ -506,19 +540,23 @@
 	      html2canvas: {
 	        scale: 2,
 	        useCORS: true,
-	        backgroundColor: "#ffffff"
+	        backgroundColor: "#ffffff",
+	        scrollX: 0,
+	        scrollY: 0,
+	        windowWidth: 1100
 	      },
 	      jsPDF: {
 	        unit: "mm",
 	        format: "a4",
-	        orientation: "portrait"
+	        orientation: "landscape"
 	      },
 	      pagebreak: {
-	        mode: ["css", "legacy"]
+	        mode: ["css", "legacy"],
+	        avoid: [".overall", ".section", ".row"]
 	      }
 	    };
 	
-	    await html2pdf().set(opt).from(clone).save();
+	    await html2pdf().set(opt).from(tempWrap).save();
 	
 	    document.body.removeChild(tempWrap);
 	
