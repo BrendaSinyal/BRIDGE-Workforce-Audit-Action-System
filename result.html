@@ -226,9 +226,17 @@
     }
 
     function scoreToAngle(score) {
-      const s = clamp(score, 0, 100);
-      return Math.PI + (s / 100) * Math.PI;
-    }
+	  const s = clamp(Number(score), 0, 100);
+	
+	  // kalau score tepat di awal kategori, geser sedikit masuk ke kategori tersebut
+	  let visualScore = s;
+	
+	  if (s >= 80 && s < 81) visualScore = 80.8;
+		else if (s >= 60 && s < 61) visualScore = 60.8;
+		else if (s >= 40 && s < 41) visualScore = 40.8;
+	
+	  return Math.PI + (visualScore / 100) * Math.PI;
+	}
 
     function getParam(name) {
       const u = new URL(window.location.href);
