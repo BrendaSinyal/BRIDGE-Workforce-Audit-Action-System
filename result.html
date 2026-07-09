@@ -231,9 +231,9 @@
 	  // kalau score tepat di awal kategori, geser sedikit masuk ke kategori tersebut
 	  let visualScore = s;
 	
-	  if (s >= 80 && s < 81) visualScore = 80.8;
-		else if (s >= 60 && s < 61) visualScore = 60.8;
-		else if (s >= 40 && s < 41) visualScore = 40.8;
+	  if (s >= 80 && s < 81) visualScore = 81;
+		else if (s >= 60 && s < 61) visualScore = 61;
+		else if (s >= 40 && s < 41) visualScore = 41;
 	
 	  return Math.PI + (visualScore / 100) * Math.PI;
 	}
