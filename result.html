@@ -13,6 +13,20 @@
     h1 { font-size: 26px; margin: 0 0 8px; color:#0a4aa6; font-weight:800; }
     .topline { height: 3px; background:#c8dcf6; margin: 6px 0 14px; border-radius:999px; }
 
+	  .pageHeader {
+		  display: flex;
+		  justify-content: flex-end;
+		  align-items: center;
+		  margin: 0 0 12px;
+		  padding: 8px 2px;
+		}
+		
+		.pageHeader img {
+		  height: 42px;
+		  width: auto;
+		  object-fit: contain;
+		}
+
     .row { display:flex; gap:18px; align-items:flex-start; flex-wrap:wrap; }
     .left { flex: 1 1 520px; }
     .right { flex: 0 0 300px; }
@@ -135,6 +149,11 @@
 
 <body>
   <div class="wrap">
+	  
+	      <div class="pageHeader">
+		      <img id="reportLogo" alt="B/RIDGE logo" />
+		    </div>
+	  
     <div class="card">
       <h1>B/RIDGE™ Workforce Readiness Assessment</h1>
       <div class="topline"></div>
@@ -535,7 +554,7 @@
 	
 	async function downloadResultPdf() {
 	  const btn = document.getElementById("downloadPdfBtn");
-	  const card = document.querySelector(".card");
+	  const card = document.querySelector(".wrap");
 	  let tempWrap = null;
 	
 	  if (!card) return;
@@ -708,6 +727,19 @@
 
           currentScore = score;
           currentLabel = label;
+
+			const logoEl = document.getElementById("reportLogo");
+			const sheetLogoUrl = String(resp.logoUrl || "").trim();
+			
+			if (logoEl) {
+			  if (sheetLogoUrl) {
+			    logoEl.src = sheetLogoUrl;
+			    logoEl.style.display = "block";
+			  } else {
+			    logoEl.removeAttribute("src");
+			    logoEl.style.display = "none";
+			  }
+			}
 
           drawGauge(score, label);
 
