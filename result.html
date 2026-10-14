@@ -495,7 +495,7 @@
 	        fill="#0f2f6b"
 	        font-size="${pctFont}"
 	        font-weight="900"
-	      >${Math.round(score)}%</text>
+	      >${Math.trunc(score)}%</text>
 	
 	      <rect
 	        x="${pillX}"
@@ -532,9 +532,9 @@
     function setBar(barId, valId, score) {
       const s = clamp(Number(score), 0, 100);
       const bar = document.getElementById(barId);
-      bar.style.width = (isNaN(s) ? 0 : Math.round(s)) + "%";
+      bar.style.width = (isNaN(s) ? 0 : Math.trunc(s)) + "%";
       bar.className = "bar " + classByScore(s);
-      document.getElementById(valId).textContent = (isNaN(s) ? "—%" : Math.round(s) + "%");
+      document.getElementById(valId).textContent = (isNaN(s) ? "—%" : Math.trunc(s) + "%");
     }
 
     function extractBodyInner(html) {
@@ -595,7 +595,7 @@
 	    // pastikan overall benar
 	    const overallScore = clone.querySelector("#overallScore");
 	    if (overallScore) {
-	      overallScore.textContent = `${Math.round(currentScore)}%`;
+	      overallScore.textContent = `${Math.trunc(currentScore)}%`;
 	    }
 	
 	    const overallLabel = clone.querySelector("#overallLabel");
@@ -680,7 +680,7 @@
 	
 	    pdf.addImage(imgData, "PNG", x, y, renderW, renderH);
 	
-	    const scoreText = Math.round(currentScore);
+	    const scoreText = Math.trunc(currentScore);
 	    const labelText = String(currentLabel || "Readiness").replace(/\s+/g, "-");
 	
 	    pdf.save(`BRIDGE_Workforce_Readiness_${labelText}_${scoreText}.pdf`);
@@ -725,9 +725,9 @@
             return;
           }
 
-          const score = clamp(scoreNum, 0, 100);
-          const labelRaw = resp.readiness ?? resp.label;
-          const label = String(labelRaw ?? scoreToLabel(score)).trim();
+          // Use one whole-number score for the displayed percentage, gauge needle, and readiness label.
+          const score = Math.trunc(clamp(scoreNum, 0, 100));
+          const label = scoreToLabel(score);
 
           currentScore = score;
           currentLabel = label;
@@ -747,7 +747,7 @@
 
           drawGauge(score, label);
 
-          document.getElementById("overallScore").textContent = `${Math.round(score)}%`;
+          document.getElementById("overallScore").textContent = `${Math.trunc(score)}%`;
           document.getElementById("overallLabel").textContent = `${label} Readiness`;
 
           const sec = resp.section ?? resp.sections ?? {};
