@@ -746,9 +746,17 @@
 			}
 
           drawGauge(score, label);
+        
+document.getElementById("overallScore").textContent = `${Math.trunc(score)}%`;
 
-          document.getElementById("overallScore").textContent = `${Math.trunc(score)}%`;
-          document.getElementById("overallLabel").textContent = `${label} Readiness`;
+const overallLabelEl = document.getElementById("overallLabel");
+overallLabelEl.textContent = `${label} Readiness`;
+
+overallLabelEl.style.color =
+  label === "High" ? "#1a7a4a" :
+  label === "Moderate" ? "#9a6a00" :
+  label === "Low" ? "#c96a1b" :
+  "#a10f0f";
 
           const sec = resp.section ?? resp.sections ?? {};
           setBar("barBuild", "valBuild", sec.build);
